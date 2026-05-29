@@ -1,4 +1,26 @@
+import { router, usePage } from "@inertiajs/react"
+
+type AuthUser = {
+  id: number
+  name: string
+  email: string
+  role: string
+}
+
+type SharedProps = {
+  auth?: {
+    user?: AuthUser | null
+  }
+}
+
 export default function Navbar() {
+  const { auth } = usePage<SharedProps>().props
+  const user = auth?.user
+
+  function handleLogout() {
+    router.delete("/logout")
+  }
+
   return (
     <header className="border-b border-slate-200 bg-white px-6 py-3">
       <div className="flex items-center justify-between gap-4">
@@ -10,19 +32,32 @@ export default function Navbar() {
           />
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <div className="text-right">
             <p className="text-sm font-medium text-slate-900">
-              Admin User
+              {user?.name || "User"}
             </p>
             <p className="text-xs text-slate-500">
-              Development mode
+              {user?.role || "Development mode"}
             </p>
           </div>
 
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
-            AU
+            {user?.name
+              ?.split(" ")
+              .map((part) => part[0])
+              .join("")
+              .slice(0, 2)
+              .toUpperCase() || "U"}
           </div>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="rounded-lg border border-red-100 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-50"
+          >
+            Sign out
+          </button>
         </div>
       </div>
     </header>
