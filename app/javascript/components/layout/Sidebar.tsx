@@ -1,12 +1,43 @@
-const navigationItems = [
+import { usePage } from "@inertiajs/react"
+
+type AuthUser = {
+  id: number
+  name: string
+  email: string
+  role: string
+}
+
+type SharedProps = {
+  auth?: {
+    user?: AuthUser | null
+  }
+}
+
+type NavigationItem = {
+  label: string
+  href: string
+  disabled?: boolean
+  allowedRoles?: string[]
+}
+
+const navigationItems: NavigationItem[] = [
   { label: "Home", href: "/" },
-  { label: "Users", href: "#", disabled: true },
+  { label: "Users", href: "/users", allowedRoles: ["admin", "supervisor"] },
   { label: "Services", href: "#", disabled: true },
   { label: "Service Windows", href: "#", disabled: true },
   { label: "Tickets", href: "#", disabled: true },
 ]
 
 export default function Sidebar() {
+  const { url, props } = usePage<SharedProps>()
+  const userRole = props.auth?.user?.role
+
+  const visibleNavigationItems = navigationItems.filter((item) => {
+    if (!item.allowedRoles) return true
+
+    return Boolean(userRole && item.allowedRoles.includes(userRole))
+  })
+
   return (
     <aside className="hidden min-h-screen w-64 border-r border-slate-200 bg-white px-5 py-5 lg:flex lg:flex-col">
       <div className="mb-8 flex items-center gap-2">
@@ -25,22 +56,30 @@ export default function Sidebar() {
       </div>
 
       <nav className="space-y-1">
-        {navigationItems.map((item) => (
-          <a
-            key={item.label}
-            href={item.href}
-            aria-disabled={item.disabled}
-            className={`block rounded-lg px-3 py-2 text-sm font-medium transition ${
-              item.href === "/"
-                ? "bg-blue-600 text-white"
-                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-            } ${
-              item.disabled ? "cursor-not-allowed opacity-60" : ""
-            }`}
-          >
-            {item.label}
-          </a>
-        ))}
+        {visibleNavigationItems.map((item) => {
+          const isActive = item.href === "/" ? url === "/" : url.startsWith(item.href)
+
+          return (
+            <a
+              key={item.label}
+              href={item.href}
+              aria-current={isActive ? "page" : undefined}
+              aria-disabled={item.disabled}
+              onClick={(event) => {
+                if (item.disabled) event.preventDefault()
+              }}
+              className={`block rounded-lg px-3 py-2 text-sm font-medium transition ${
+                isActive
+                  ? "bg-blue-600 text-white"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              } ${
+                item.disabled ? "cursor-not-allowed opacity-60" : ""
+              }`}
+            >
+              {item.label}
+            </a>
+          )
+        })}
       </nav>
 
       <div className="mt-auto border-t border-slate-200 pt-4">
