@@ -10,9 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_27_004617) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_04_015902) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "queue_services", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.integer "estimated_attention_minutes"
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_queue_services_on_active"
+    t.index ["code"], name: "index_queue_services_on_code", unique: true
+  end
 
   create_table "roles", force: :cascade do |t|
     t.datetime "created_at", null: false

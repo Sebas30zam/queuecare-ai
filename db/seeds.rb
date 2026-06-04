@@ -43,3 +43,51 @@ users.each do |user_data|
   user.password_confirmation = "password123"
   user.save!
 end
+
+queue_services = [
+  {
+    name: "Admissions",
+    code: "ADM",
+    description: "Student admissions and enrollment support.",
+    estimated_attention_minutes: 12
+  },
+  {
+    name: "Finance",
+    code: "FIN",
+    description: "Financial procedures, payments, and account inquiries.",
+    estimated_attention_minutes: 15
+  },
+  {
+    name: "Registration",
+    code: "REG",
+    description: "Course registration and academic record procedures.",
+    estimated_attention_minutes: 10
+  },
+  {
+    name: "Academic Support",
+    code: "ACS",
+    description: "Academic assistance and student support services.",
+    estimated_attention_minutes: 18
+  },
+  {
+    name: "Cashier",
+    code: "CAS",
+    description: "Cashier payments and receipt processing.",
+    estimated_attention_minutes: 8
+  },
+  {
+    name: "Service Platform",
+    code: "SRV",
+    description: "General service desk and institutional support.",
+    estimated_attention_minutes: 12
+  }
+]
+
+queue_services.each do |service_data|
+  service = QueueService.find_or_initialize_by(code: service_data[:code])
+  service.name = service_data[:name]
+  service.description = service_data[:description]
+  service.active = true
+  service.estimated_attention_minutes = service_data[:estimated_attention_minutes]
+  service.save!
+end
