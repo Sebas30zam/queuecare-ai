@@ -23,7 +23,7 @@ type NavigationItem = {
 const navigationItems: NavigationItem[] = [
   { label: "Home", href: "/" },
   { label: "Users", href: "/users", allowedRoles: ["admin", "supervisor"] },
-  { label: "Services", href: "#", disabled: true },
+  { label: "Queue Services", href: "/queue_services", allowedRoles: ["admin", "supervisor"] },
   { label: "Service Windows", href: "#", disabled: true },
   { label: "Tickets", href: "#", disabled: true },
 ]
