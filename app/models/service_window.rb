@@ -1,13 +1,10 @@
-class QueueService < ApplicationRecord
-  has_many :service_windows, dependent: :restrict_with_exception
+class ServiceWindow < ApplicationRecord
+  belongs_to :queue_service
 
   before_validation :normalize_code
 
   validates :name, presence: true
   validates :code, presence: true, uniqueness: true
-  validates :estimated_attention_minutes,
-            numericality: { greater_than: 0 },
-            allow_nil: true
 
   private
 

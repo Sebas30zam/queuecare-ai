@@ -1,15 +1,27 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+admin_user:
+  name: Admin User
+  email: admin@test.com
+  password_digest: <%= BCrypt::Password.create("password123") %>
+  active: true
+  role: admin
 
-one:
-  name: MyString
-  email: MyString
-  password_digest: MyString
-  active: false
-  role: one
+receptionist_user:
+  name: Receptionist User
+  email: receptionist@test.com
+  password_digest: <%= BCrypt::Password.create("password123") %>
+  active: true
+  role: receptionist
 
-two:
-  name: MyString
-  email: MyString
-  password_digest: MyString
-  active: false
-  role: two
+agent_user:
+  name: Agent User
+  email: agent@test.com
+  password_digest: <%= BCrypt::Password.create("password123") %>
+  active: true
+  role: agent
+
+supervisor_user:
+  name: Supervisor User
+  email: supervisor@test.com
+  password_digest: <%= BCrypt::Password.create("password123") %>
+  active: true
+  role: supervisor

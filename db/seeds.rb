@@ -91,3 +91,46 @@ queue_services.each do |service_data|
   service.estimated_attention_minutes = service_data[:estimated_attention_minutes]
   service.save!
 end
+
+service_windows = [
+  {
+    name: "Window 1",
+    code: "W1",
+    queue_service_code: "ADM"
+  },
+  {
+    name: "Window 2",
+    code: "W2",
+    queue_service_code: "FIN"
+  },
+  {
+    name: "Window 3",
+    code: "W3",
+    queue_service_code: "REG"
+  },
+  {
+    name: "Window 4",
+    code: "W4",
+    queue_service_code: "ACS"
+  },
+  {
+    name: "Window 5",
+    code: "W5",
+    queue_service_code: "CAS"
+  },
+  {
+    name: "Window 6",
+    code: "W6",
+    queue_service_code: "SRV"
+  }
+]
+
+service_windows.each do |window_data|
+  queue_service = QueueService.find_by!(code: window_data[:queue_service_code])
+
+  service_window = ServiceWindow.find_or_initialize_by(code: window_data[:code])
+  service_window.name = window_data[:name]
+  service_window.queue_service = queue_service
+  service_window.active = true
+  service_window.save!
+end
