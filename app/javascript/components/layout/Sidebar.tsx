@@ -24,7 +24,7 @@ const navigationItems: NavigationItem[] = [
   { label: "Home", href: "/" },
   { label: "Users", href: "/users", allowedRoles: ["admin", "supervisor"] },
   { label: "Queue Services", href: "/queue_services", allowedRoles: ["admin", "supervisor"] },
-  { label: "Service Windows", href: "#", disabled: true },
+  { label: "Service Windows", href: "/service_windows", allowedRoles: ["admin", "supervisor"] },
   { label: "Tickets", href: "#", disabled: true },
 ]
 

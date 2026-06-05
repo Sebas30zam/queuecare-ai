@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_04_015902) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_05_030755) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -33,6 +33,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_04_015902) do
     t.index ["name"], name: "index_roles_on_name", unique: true
   end
 
+  create_table "service_windows", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.bigint "queue_service_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_service_windows_on_active"
+    t.index ["code"], name: "index_service_windows_on_code", unique: true
+    t.index ["queue_service_id"], name: "index_service_windows_on_queue_service_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
@@ -45,5 +57,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_04_015902) do
     t.index ["role_id"], name: "index_users_on_role_id"
   end
 
+  add_foreign_key "service_windows", "queue_services"
   add_foreign_key "users", "roles"
 end

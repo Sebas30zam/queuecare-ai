@@ -1,0 +1,11 @@
+window_one:
+  queue_service: admissions
+  name: Window 1
+  code: W1
+  active: true
+
+window_two:
+  queue_service: finance
+  name: Window 2
+  code: W2
+  active: true

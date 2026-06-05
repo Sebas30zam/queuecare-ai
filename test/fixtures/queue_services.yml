@@ -1,15 +1,13 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+admissions:
+  name: Admissions
+  code: ADM
+  description: Student admissions and enrollment support.
+  active: true
+  estimated_attention_minutes: 12
 
-one:
-  name: MyString
-  code: MyString
-  description: MyText
-  active: false
-  estimated_attention_minutes: 1
-
-two:
-  name: MyString
-  code: MyString
-  description: MyText
-  active: false
-  estimated_attention_minutes: 1
+finance:
+  name: Finance
+  code: FIN
+  description: Financial procedures, payments, and account inquiries.
+  active: true
+  estimated_attention_minutes: 15

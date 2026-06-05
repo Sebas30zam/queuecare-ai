@@ -1,7 +1,11 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+admin:
+  name: admin
 
-one:
-  name: MyString
+receptionist:
+  name: receptionist
 
-two:
-  name: MyString
+agent:
+  name: agent
+
+supervisor:
+  name: supervisor
