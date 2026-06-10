@@ -106,7 +106,203 @@ class AgentQueuesControllerTest < ActionDispatch::IntegrationTest
     )
   end
 
+  test "agent starts assigned called ticket" do
+    agent = users(:agent_user)
+    prepare_called_ticket(assigned_agent: agent)
+    login_as(agent)
+
+    patch start_ticket_attention_url(@pending_ticket)
+
+    assert_redirected_to agent_queue_url(
+      service_window_id: @service_window.id
+    )
+
+    @pending_ticket.reload
+
+    assert_equal "in_attention", @pending_ticket.status
+    assert_equal Time.current, @pending_ticket.started_at
+    assert_equal(
+      "Ticket #{@pending_ticket.ticket_number} attention started successfully.",
+      flash[:notice]
+    )
+  end
+
+  test "admin starts own assigned called ticket" do
+    admin = users(:admin_user)
+    prepare_called_ticket(assigned_agent: admin)
+    login_as(admin)
+
+    patch start_ticket_attention_url(@pending_ticket)
+
+    assert_redirected_to agent_queue_url(
+      service_window_id: @service_window.id
+    )
+
+    @pending_ticket.reload
+
+    assert_equal "in_attention", @pending_ticket.status
+    assert_equal admin, @pending_ticket.assigned_agent
+    assert_equal Time.current, @pending_ticket.started_at
+  end
+
+  test "cannot start ticket assigned to another agent" do
+    prepare_called_ticket(assigned_agent: users(:admin_user))
+    login_as(users(:agent_user))
+
+    patch start_ticket_attention_url(@pending_ticket)
+
+    assert_redirected_to agent_queue_url(
+      service_window_id: @service_window.id
+    )
+
+    assert_equal "called", @pending_ticket.reload.status
+    assert_nil @pending_ticket.started_at
+    assert_equal "Ticket is assigned to another agent", flash[:alert]
+  end
+
+  test "cannot start ticket with invalid status" do
+    agent = users(:agent_user)
+    @pending_ticket.update!(
+      assigned_agent: agent,
+      service_window: @service_window,
+      status: "pending"
+    )
+    login_as(agent)
+
+    patch start_ticket_attention_url(@pending_ticket)
+
+    assert_redirected_to agent_queue_url(
+      service_window_id: @service_window.id
+    )
+
+    assert_equal "pending", @pending_ticket.reload.status
+    assert_nil @pending_ticket.started_at
+    assert_equal(
+      "Ticket must be called before attention can start",
+      flash[:alert]
+    )
+  end
+
+  test "agent finishes own in attention ticket" do
+    agent = users(:agent_user)
+    prepare_in_attention_ticket(assigned_agent: agent)
+    login_as(agent)
+
+    patch finish_ticket_attention_url(@pending_ticket)
+
+    assert_redirected_to agent_queue_url(
+      service_window_id: @service_window.id
+    )
+
+    @pending_ticket.reload
+
+    assert_equal "attended", @pending_ticket.status
+    assert_equal Time.current, @pending_ticket.finished_at
+    assert_equal(
+      "Ticket #{@pending_ticket.ticket_number} attention finished successfully.",
+      flash[:notice]
+    )
+  end
+
+  test "cannot finish ticket assigned to another agent" do
+    prepare_in_attention_ticket(assigned_agent: users(:admin_user))
+    login_as(users(:agent_user))
+
+    patch finish_ticket_attention_url(@pending_ticket)
+
+    assert_redirected_to agent_queue_url(
+      service_window_id: @service_window.id
+    )
+
+    assert_equal "in_attention", @pending_ticket.reload.status
+    assert_nil @pending_ticket.finished_at
+    assert_equal "Ticket is assigned to another agent", flash[:alert]
+  end
+
+  test "cannot finish ticket with invalid status" do
+    agent = users(:agent_user)
+    prepare_called_ticket(assigned_agent: agent)
+    login_as(agent)
+
+    patch finish_ticket_attention_url(@pending_ticket)
+
+    assert_redirected_to agent_queue_url(
+      service_window_id: @service_window.id
+    )
+
+    assert_equal "called", @pending_ticket.reload.status
+    assert_nil @pending_ticket.finished_at
+    assert_equal(
+      "Ticket must be in attention before attention can finish",
+      flash[:alert]
+    )
+  end
+
+  test "receptionist cannot use attention actions" do
+    prepare_called_ticket(assigned_agent: users(:agent_user))
+    login_as(users(:receptionist_user))
+
+    patch start_ticket_attention_url(@pending_ticket)
+
+    assert_redirected_to root_url
+    assert_equal(
+      "You are not authorized to access this page.",
+      flash[:alert]
+    )
+
+    patch finish_ticket_attention_url(@pending_ticket)
+
+    assert_redirected_to root_url
+    assert_equal(
+      "You are not authorized to access this page.",
+      flash[:alert]
+    )
+  end
+
+  test "supervisor cannot use attention actions" do
+    prepare_called_ticket(assigned_agent: users(:agent_user))
+    login_as(users(:supervisor_user))
+
+    patch start_ticket_attention_url(@pending_ticket)
+
+    assert_redirected_to root_url
+    assert_equal(
+      "You are not authorized to access this page.",
+      flash[:alert]
+    )
+
+    patch finish_ticket_attention_url(@pending_ticket)
+
+    assert_redirected_to root_url
+    assert_equal(
+      "You are not authorized to access this page.",
+      flash[:alert]
+    )
+  end
+
   private
+
+  def prepare_called_ticket(assigned_agent:)
+    @pending_ticket.update!(
+      assigned_agent: assigned_agent,
+      service_window: @service_window,
+      status: "called",
+      called_at: 5.minutes.ago,
+      started_at: nil,
+      finished_at: nil
+    )
+  end
+
+  def prepare_in_attention_ticket(assigned_agent:)
+    @pending_ticket.update!(
+      assigned_agent: assigned_agent,
+      service_window: @service_window,
+      status: "in_attention",
+      called_at: 10.minutes.ago,
+      started_at: 5.minutes.ago,
+      finished_at: nil
+    )
+  end
 
   def login_as(user)
     post login_url, params: {
