@@ -10,9 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_05_030755) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_09_220221) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "daily_sequences", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "current_number", default: 0, null: false
+    t.bigint "queue_service_id", null: false
+    t.date "sequence_date", null: false
+    t.datetime "updated_at", null: false
+    t.index ["queue_service_id", "sequence_date"], name: "index_daily_sequences_on_queue_service_id_and_sequence_date", unique: true
+    t.index ["queue_service_id"], name: "index_daily_sequences_on_queue_service_id"
+  end
 
   create_table "queue_services", force: :cascade do |t|
     t.boolean "active", default: true, null: false
@@ -45,6 +55,40 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_030755) do
     t.index ["queue_service_id"], name: "index_service_windows_on_queue_service_id"
   end
 
+  create_table "tickets", force: :cascade do |t|
+    t.bigint "assigned_agent_id"
+    t.string "assistance_type"
+    t.datetime "called_at"
+    t.datetime "cancelled_at"
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id"
+    t.string "customer_identifier"
+    t.string "customer_name"
+    t.integer "daily_sequence", null: false
+    t.datetime "finished_at"
+    t.string "intake_source", default: "assisted", null: false
+    t.datetime "no_show_at"
+    t.string "priority", null: false
+    t.integer "priority_weight", null: false
+    t.bigint "queue_service_id", null: false
+    t.text "request_description"
+    t.date "sequence_date", null: false
+    t.bigint "service_window_id"
+    t.datetime "started_at"
+    t.string "status", null: false
+    t.string "ticket_number", null: false
+    t.datetime "updated_at", null: false
+    t.index ["assigned_agent_id"], name: "index_tickets_on_assigned_agent_id"
+    t.index ["assistance_type"], name: "index_tickets_on_assistance_type"
+    t.index ["created_by_id"], name: "index_tickets_on_created_by_id"
+    t.index ["intake_source"], name: "index_tickets_on_intake_source"
+    t.index ["priority"], name: "index_tickets_on_priority"
+    t.index ["queue_service_id"], name: "index_tickets_on_queue_service_id"
+    t.index ["service_window_id"], name: "index_tickets_on_service_window_id"
+    t.index ["status"], name: "index_tickets_on_status"
+    t.index ["ticket_number", "sequence_date"], name: "index_tickets_on_ticket_number_and_sequence_date", unique: true
+  end
+
   create_table "users", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
@@ -57,6 +101,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_030755) do
     t.index ["role_id"], name: "index_users_on_role_id"
   end
 
+  add_foreign_key "daily_sequences", "queue_services"
   add_foreign_key "service_windows", "queue_services"
+  add_foreign_key "tickets", "queue_services"
+  add_foreign_key "tickets", "service_windows"
+  add_foreign_key "tickets", "users", column: "assigned_agent_id"
+  add_foreign_key "tickets", "users", column: "created_by_id"
   add_foreign_key "users", "roles"
 end

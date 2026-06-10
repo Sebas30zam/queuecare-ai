@@ -7,16 +7,24 @@ class ApplicationController < ActionController::Base
 
   helper_method :current_user
 
-  inertia_share auth: lambda {
-    {
-      user: current_user && {
-        id: current_user.id,
-        name: current_user.name,
-        email: current_user.email,
-        role: current_user.role.name
+  inertia_share(
+    auth: lambda {
+      {
+        user: current_user && {
+          id: current_user.id,
+          name: current_user.name,
+          email: current_user.email,
+          role: current_user.role.name
+        }
       }
+    },
+    flash: lambda {
+      {
+        notice: flash[:notice],
+        alert: flash[:alert]
+      }.compact
     }
-  }
+  )
 
   private
 

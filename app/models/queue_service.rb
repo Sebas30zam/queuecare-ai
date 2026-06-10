@@ -1,5 +1,7 @@
 class QueueService < ApplicationRecord
   has_many :service_windows, dependent: :restrict_with_exception
+  has_many :tickets, dependent: :restrict_with_exception
+  has_many :daily_sequences, dependent: :restrict_with_exception
 
   before_validation :normalize_code
 

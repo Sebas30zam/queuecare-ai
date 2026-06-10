@@ -25,7 +25,11 @@ const navigationItems: NavigationItem[] = [
   { label: "Users", href: "/users", allowedRoles: ["admin", "supervisor"] },
   { label: "Queue Services", href: "/queue_services", allowedRoles: ["admin", "supervisor"] },
   { label: "Service Windows", href: "/service_windows", allowedRoles: ["admin", "supervisor"] },
-  { label: "Tickets", href: "#", disabled: true },
+  {
+    label: "Assisted Intake",
+    href: "/tickets/reception",
+    allowedRoles: ["admin", "receptionist"],
+  },
 ]
 
 export default function Sidebar() {

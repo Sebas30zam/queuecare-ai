@@ -5,6 +5,17 @@ Rails.application.routes.draw do
   resources :queue_services, only: [:index]
   resources :service_windows, only: [:index]
 
+  get "/tickets/reception", to: "tickets#reception", as: :tickets_reception
+  post "/tickets", to: "tickets#create", as: :tickets
+
+  get "/self-service",
+      to: "self_service_tickets#new",
+      as: :self_service
+
+  post "/self-service/tickets",
+       to: "self_service_tickets#create",
+       as: :self_service_tickets
+
   get "/login", to: "sessions#new", as: :login
   post "/login", to: "sessions#create"
   delete "/logout", to: "sessions#destroy", as: :logout

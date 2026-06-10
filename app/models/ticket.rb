@@ -1,0 +1,82 @@
+class Ticket < ApplicationRecord
+  STATUSES = %w[
+    pending
+    called
+    in_attention
+    attended
+    no_show
+    cancelled
+  ].freeze
+
+  PRIORITY_WEIGHTS = {
+    "emergency" => 1,
+    "disability" => 2,
+    "senior" => 3,
+    "pregnancy" => 4,
+    "appointment" => 5,
+    "normal" => 6
+  }.freeze
+
+  INTAKE_SOURCES = %w[
+    self_service
+    assisted
+  ].freeze
+
+  ASSISTANCE_TYPES = %w[
+    disability
+    senior
+    pregnancy
+    appointment
+  ].freeze
+
+  belongs_to :queue_service
+  belongs_to :service_window, optional: true
+  belongs_to :created_by, class_name: "User", optional: true
+  belongs_to :assigned_agent, class_name: "User", optional: true
+
+  validates :ticket_number,
+            presence: true,
+            uniqueness: { scope: :sequence_date }
+
+  validates :sequence_date, presence: true
+
+  validates :daily_sequence,
+            presence: true,
+            numericality: {
+              only_integer: true,
+              greater_than: 0
+            }
+
+  validates :priority,
+            presence: true,
+            inclusion: { in: PRIORITY_WEIGHTS.keys }
+
+  validates :priority_weight,
+            presence: true,
+            inclusion: { in: PRIORITY_WEIGHTS.values }
+
+  validates :status,
+            presence: true,
+            inclusion: { in: STATUSES }
+
+  validates :intake_source,
+            presence: true,
+            inclusion: { in: INTAKE_SOURCES }
+
+  validates :assistance_type,
+            inclusion: { in: ASSISTANCE_TYPES },
+            allow_nil: true
+
+  validates :queue_service, presence: true
+
+  validate :created_by_required_for_assisted_intake
+
+  private
+
+  def created_by_required_for_assisted_intake
+    return unless intake_source == "assisted"
+    return if created_by.present?
+
+    errors.add(:created_by, "is required for assisted intake")
+  end
+end
