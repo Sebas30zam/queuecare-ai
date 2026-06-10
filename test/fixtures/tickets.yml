@@ -1,0 +1,22 @@
+self_service_ticket:
+  queue_service: admissions
+  ticket_number: ADM-001
+  sequence_date: 2026-06-09
+  daily_sequence: 1
+  priority: normal
+  priority_weight: 6
+  status: pending
+  intake_source: self_service
+
+assisted_senior_ticket:
+  queue_service: finance
+  service_window: window_two
+  created_by: receptionist_user
+  ticket_number: FIN-001
+  sequence_date: 2026-06-09
+  daily_sequence: 1
+  priority: senior
+  priority_weight: 3
+  status: pending
+  intake_source: assisted
+  assistance_type: senior

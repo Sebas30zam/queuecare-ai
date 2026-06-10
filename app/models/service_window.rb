@@ -1,6 +1,8 @@
 class ServiceWindow < ApplicationRecord
   belongs_to :queue_service
 
+  has_many :tickets, dependent: :restrict_with_exception
+
   before_validation :normalize_code
 
   validates :name, presence: true
