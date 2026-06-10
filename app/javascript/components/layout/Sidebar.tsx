@@ -30,6 +30,11 @@ const navigationItems: NavigationItem[] = [
     href: "/tickets/reception",
     allowedRoles: ["admin", "receptionist"],
   },
+  {
+    label: "Agent Queue",
+    href: "/agent-queue",
+    allowedRoles: ["agent", "admin"],
+  },
 ]
 
 export default function Sidebar() {

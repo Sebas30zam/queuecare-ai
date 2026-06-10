@@ -5,6 +5,14 @@ Rails.application.routes.draw do
   resources :queue_services, only: [:index]
   resources :service_windows, only: [:index]
 
+  get "/agent-queue",
+      to: "agent_queues#index",
+      as: :agent_queue
+
+  post "/agent-queue/call-next",
+       to: "agent_queues#call_next",
+       as: :call_next_ticket
+
   get "/tickets/reception", to: "tickets#reception", as: :tickets_reception
   post "/tickets", to: "tickets#create", as: :tickets
 
