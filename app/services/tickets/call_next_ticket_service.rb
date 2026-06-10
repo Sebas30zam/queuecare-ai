@@ -30,7 +30,21 @@ module Tickets
         return failure("Queue service is inactive")
       end
 
-      ticket = call_next_ticket
+      ticket = nil
+
+      current_user.with_lock do
+        service_window.with_lock do
+          if active_ticket?
+            return failure("The agent already has an active ticket")
+          end
+
+          if service_window_active_ticket?
+            return failure("The service window already has an active ticket")
+          end
+
+          ticket = call_next_ticket
+        end
+      end
 
       unless ticket
         return failure("No pending tickets are available for this service")
@@ -47,6 +61,20 @@ module Tickets
     private
 
     attr_reader :current_user, :service_window
+
+    def active_ticket?
+      Ticket.exists?(
+        assigned_agent: current_user,
+        status: %w[called in_attention]
+      )
+    end
+
+    def service_window_active_ticket?
+      Ticket.exists?(
+        service_window: service_window,
+        status: %w[called in_attention]
+      )
+    end
 
     def call_next_ticket
       ticket = nil

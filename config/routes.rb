@@ -13,6 +13,14 @@ Rails.application.routes.draw do
        to: "agent_queues#call_next",
        as: :call_next_ticket
 
+  patch "/agent-queue/tickets/:id/start",
+        to: "agent_queues#start_attention",
+        as: :start_ticket_attention
+
+  patch "/agent-queue/tickets/:id/finish",
+        to: "agent_queues#finish_attention",
+        as: :finish_ticket_attention
+
   get "/tickets/reception", to: "tickets#reception", as: :tickets_reception
   post "/tickets", to: "tickets#create", as: :tickets
 
