@@ -1,4 +1,4 @@
-import { useForm, usePage } from "@inertiajs/react"
+import { router, useForm, usePage } from "@inertiajs/react"
 import type { FormEvent } from "react"
 import { useState } from "react"
 
@@ -51,6 +51,13 @@ function formatCreatedAt(createdAt: string) {
   })
 }
 
+function formatStatus(status: string) {
+  return status
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ")
+}
+
 export default function TicketReception({
   queue_services: queueServices,
   assistance_types: assistanceTypes,
@@ -96,6 +103,12 @@ export default function TicketReception({
         form.reset()
         setRequestAssistance(false)
       },
+    })
+  }
+
+  const handleCancelTicket = (ticket: RecentTicketRecord) => {
+    router.patch(`/tickets/${ticket.id}/cancel`, {}, {
+      preserveScroll: true,
     })
   }
 
@@ -281,11 +294,17 @@ export default function TicketReception({
                         </p>
                       </div>
 
-                      <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">
-                        {ticket.assistance_type
-                          ? assistanceLabels[ticket.assistance_type]
-                          : "Normal"}
-                      </span>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">
+                          {ticket.assistance_type
+                            ? assistanceLabels[ticket.assistance_type]
+                            : "Normal"}
+                        </span>
+
+                        <span className="rounded-full bg-blue-50 px-2 py-1 text-[10px] font-semibold text-blue-700">
+                          {formatStatus(ticket.status)}
+                        </span>
+                      </div>
                     </div>
 
                     <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
@@ -297,6 +316,18 @@ export default function TicketReception({
 
                       <span>{formatCreatedAt(ticket.created_at)}</span>
                     </div>
+
+                    {ticket.status === "pending" && (
+                      <div className="mt-3 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => handleCancelTicket(ticket)}
+                          className="rounded-lg px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    )}
                   </article>
                 ))
               )}

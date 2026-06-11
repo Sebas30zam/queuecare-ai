@@ -27,6 +27,9 @@ Rails.application.routes.draw do
 
   get "/tickets/reception", to: "tickets#reception", as: :tickets_reception
   post "/tickets", to: "tickets#create", as: :tickets
+  patch "/tickets/:id/cancel",
+        to: "tickets#cancel",
+        as: :cancel_ticket
 
   get "/self-service",
       to: "self_service_tickets#new",

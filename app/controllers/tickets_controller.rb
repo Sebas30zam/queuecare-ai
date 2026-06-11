@@ -53,6 +53,23 @@ class TicketsController < ApplicationController
     end
   end
 
+  def cancel
+    ticket = Ticket.find(params[:id])
+
+    result = Tickets::CancelTicketService.new(
+      current_user: current_user,
+      ticket: ticket
+    ).call
+
+    if result.success?
+      redirect_to tickets_reception_path,
+                  notice: "Ticket #{result.ticket.ticket_number} cancelled successfully."
+    else
+      redirect_to tickets_reception_path,
+                  alert: result.errors.to_sentence
+    end
+  end
+
   private
 
   def assisted_ticket_params

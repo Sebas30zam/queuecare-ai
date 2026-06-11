@@ -106,6 +106,176 @@ class TicketsControllerTest < ActionDispatch::IntegrationTest
     assert_equal users(:admin_user), ticket.created_by
   end
 
+  test "admin can cancel pending ticket" do
+    ticket = tickets(:self_service_ticket)
+    ticket.update!(status: "pending", cancelled_at: nil)
+
+    sign_in_as(users(:admin_user))
+
+    patch cancel_ticket_url(ticket)
+
+    assert_redirected_to tickets_reception_url
+    assert_equal "cancelled", ticket.reload.status
+    assert_equal Time.current, ticket.cancelled_at
+    assert_equal "Ticket #{ticket.ticket_number} cancelled successfully.", flash[:notice]
+  end
+
+  test "receptionist can cancel pending ticket" do
+    ticket = tickets(:self_service_ticket)
+    ticket.update!(status: "pending", cancelled_at: nil)
+
+    sign_in_as(users(:receptionist_user))
+
+    patch cancel_ticket_url(ticket)
+
+    assert_redirected_to tickets_reception_url
+    assert_equal "cancelled", ticket.reload.status
+    assert_equal Time.current, ticket.cancelled_at
+    assert_equal "Ticket #{ticket.ticket_number} cancelled successfully.", flash[:notice]
+  end
+
+  test "agent cannot cancel ticket" do
+    ticket = tickets(:self_service_ticket)
+    ticket.update!(status: "pending", cancelled_at: nil)
+
+    sign_in_as(users(:agent_user))
+
+    patch cancel_ticket_url(ticket)
+
+    assert_redirected_to root_url
+    assert_equal "You are not authorized to access this page.", flash[:alert]
+    assert_equal "pending", ticket.reload.status
+    assert_nil ticket.cancelled_at
+  end
+
+  test "supervisor cannot cancel ticket" do
+    ticket = tickets(:self_service_ticket)
+    ticket.update!(status: "pending", cancelled_at: nil)
+
+    sign_in_as(users(:supervisor_user))
+
+    patch cancel_ticket_url(ticket)
+
+    assert_redirected_to root_url
+    assert_equal "You are not authorized to access this page.", flash[:alert]
+    assert_equal "pending", ticket.reload.status
+    assert_nil ticket.cancelled_at
+  end
+
+  test "cannot cancel called ticket" do
+    ticket = tickets(:self_service_ticket)
+    ticket.update!(
+      assigned_agent: users(:agent_user),
+      service_window: service_windows(:window_one),
+      status: "called",
+      called_at: 1.minute.ago,
+      cancelled_at: nil
+    )
+
+    sign_in_as(users(:admin_user))
+
+    patch cancel_ticket_url(ticket)
+
+    assert_redirected_to tickets_reception_url
+    assert_equal "Ticket must be pending before it can be cancelled", flash[:alert]
+    assert_equal "called", ticket.reload.status
+    assert_nil ticket.cancelled_at
+  end
+
+  test "cannot cancel in attention ticket" do
+    ticket = tickets(:self_service_ticket)
+    ticket.update!(
+      assigned_agent: users(:agent_user),
+      service_window: service_windows(:window_one),
+      status: "in_attention",
+      called_at: 5.minutes.ago,
+      started_at: 2.minutes.ago,
+      cancelled_at: nil
+    )
+
+    sign_in_as(users(:admin_user))
+
+    patch cancel_ticket_url(ticket)
+
+    assert_redirected_to tickets_reception_url
+    assert_equal "Ticket must be pending before it can be cancelled", flash[:alert]
+    assert_equal "in_attention", ticket.reload.status
+    assert_nil ticket.cancelled_at
+  end
+
+  test "cannot cancel attended ticket" do
+    ticket = tickets(:self_service_ticket)
+    ticket.update!(
+      assigned_agent: users(:agent_user),
+      service_window: service_windows(:window_one),
+      status: "attended",
+      called_at: 8.minutes.ago,
+      started_at: 6.minutes.ago,
+      finished_at: 1.minute.ago,
+      cancelled_at: nil
+    )
+
+    sign_in_as(users(:admin_user))
+
+    patch cancel_ticket_url(ticket)
+
+    assert_redirected_to tickets_reception_url
+    assert_equal "Ticket must be pending before it can be cancelled", flash[:alert]
+    assert_equal "attended", ticket.reload.status
+    assert_nil ticket.cancelled_at
+  end
+
+  test "cannot cancel no show ticket" do
+    ticket = tickets(:self_service_ticket)
+    ticket.update!(
+      assigned_agent: users(:agent_user),
+      service_window: service_windows(:window_one),
+      status: "no_show",
+      called_at: 8.minutes.ago,
+      no_show_at: 1.minute.ago,
+      cancelled_at: nil
+    )
+
+    sign_in_as(users(:admin_user))
+
+    patch cancel_ticket_url(ticket)
+
+    assert_redirected_to tickets_reception_url
+    assert_equal "Ticket must be pending before it can be cancelled", flash[:alert]
+    assert_equal "no_show", ticket.reload.status
+    assert_nil ticket.cancelled_at
+  end
+
+  test "cancelled ticket shows alert if cancelled again" do
+    ticket = tickets(:self_service_ticket)
+    previous_cancelled_at = 1.minute.ago
+
+    ticket.update!(
+      status: "cancelled",
+      cancelled_at: previous_cancelled_at
+    )
+
+    sign_in_as(users(:admin_user))
+
+    patch cancel_ticket_url(ticket)
+
+    assert_redirected_to tickets_reception_url
+    assert_equal "Ticket must be pending before it can be cancelled", flash[:alert]
+    assert_equal "cancelled", ticket.reload.status
+    assert_equal previous_cancelled_at, ticket.cancelled_at
+  end
+
+  test "user without login is redirected when cancelling ticket" do
+    ticket = tickets(:self_service_ticket)
+    ticket.update!(status: "pending", cancelled_at: nil)
+
+    patch cancel_ticket_url(ticket)
+
+    assert_redirected_to login_url
+    assert_equal "pending", ticket.reload.status
+    assert_nil ticket.cancelled_at
+  end
+
   private
 
   def sign_in_as(user)
