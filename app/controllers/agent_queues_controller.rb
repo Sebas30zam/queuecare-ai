@@ -99,6 +99,28 @@ class AgentQueuesController < ApplicationController
     end
   end
 
+  def mark_no_show
+    ticket = Ticket.find_by(id: params[:id])
+
+    result = Tickets::MarkNoShowService.new(
+      current_user: current_user,
+      ticket: ticket
+    ).call
+
+    if result.success?
+      redirect_to agent_queue_path(
+        service_window_id: result.ticket.service_window_id
+      ),
+                  notice: "Ticket #{result.ticket.ticket_number} marked as no-show."
+    else
+      redirect_to agent_queue_path(
+        service_window_id: ticket&.service_window_id ||
+          params[:service_window_id]
+      ),
+                  alert: result.errors.to_sentence
+    end
+  end
+
   private
 
   def available_service_windows

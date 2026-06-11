@@ -92,6 +92,8 @@ const assistanceLabels: Record<string, string> = {
   appointment: "Scheduled appointment",
 }
 
+const NO_SHOW_WAIT_SECONDS = 15
+
 function formatTime(dateTime: string | null | undefined) {
   if (!dateTime) return "Not available"
 
@@ -109,6 +111,18 @@ function getStatusLabel(status: "called" | "in_attention" | null) {
   if (status === "called") return "Called"
   if (status === "in_attention") return "In attention"
   return "No active ticket"
+}
+
+function getNoShowRemainingSeconds(calledAt: string | null | undefined) {
+  if (!calledAt) return NO_SHOW_WAIT_SECONDS
+
+  const calledAtTime = new Date(calledAt).getTime()
+
+  if (Number.isNaN(calledAtTime)) return NO_SHOW_WAIT_SECONDS
+
+  const elapsedSeconds = Math.floor((Date.now() - calledAtTime) / 1000)
+
+  return Math.max(NO_SHOW_WAIT_SECONDS - elapsedSeconds, 0)
 }
 
 export default function AgentQueue({
@@ -145,6 +159,7 @@ export default function AgentQueue({
 
   const startAttentionForm = useForm({})
   const finishAttentionForm = useForm({})
+  const markNoShowForm = useForm({})
 
   const activeTicketStatus = useMemo<"called" | "in_attention" | null>(() => {
     if (currentInAttentionTicket) return "in_attention"
@@ -154,6 +169,26 @@ export default function AgentQueue({
 
   const activeTicket = currentInAttentionTicket ?? currentCalledTicket
   const agentHasActiveTicket = agentActiveTicket !== null
+  const [noShowRemainingSeconds, setNoShowRemainingSeconds] = useState(0)
+
+  useEffect(() => {
+    if (!currentCalledTicket?.called_at) {
+      setNoShowRemainingSeconds(0)
+      return
+    }
+
+    const updateRemainingSeconds = () => {
+      setNoShowRemainingSeconds(
+        getNoShowRemainingSeconds(currentCalledTicket.called_at),
+      )
+    }
+
+    updateRemainingSeconds()
+
+    const intervalId = window.setInterval(updateRemainingSeconds, 1_000)
+
+    return () => window.clearInterval(intervalId)
+  }, [currentCalledTicket?.called_at])
 
   const handleServiceWindowChange = (serviceWindowId: string) => {
     callNextForm.setData("service_window_id", serviceWindowId)
@@ -198,6 +233,17 @@ export default function AgentQueue({
     )
   }
 
+  const handleMarkNoShow = () => {
+    if (!currentCalledTicket || !canMarkNoShow) return
+
+    markNoShowForm.patch(
+      `/agent-queue/tickets/${currentCalledTicket.id}/no-show`,
+      {
+        preserveScroll: true,
+      },
+    )
+  }
+
   const handleFinishAttention = () => {
     if (!currentInAttentionTicket) return
 
@@ -208,6 +254,12 @@ export default function AgentQueue({
       },
     )
   }
+
+  const canMarkNoShow =
+    activeTicketStatus === "called" &&
+    noShowRemainingSeconds === 0 &&
+    !startAttentionForm.processing &&
+    !markNoShowForm.processing
 
   const canCallNext =
     selectedServiceWindow !== null &&
@@ -460,16 +512,38 @@ export default function AgentQueue({
 
                 <div className="mt-6">
                   {activeTicketStatus === "called" && (
-                    <button
-                      type="button"
-                      onClick={handleStartAttention}
-                      disabled={startAttentionForm.processing}
-                      className="w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {startAttentionForm.processing
-                        ? "Starting..."
-                        : "Start attention"}
-                    </button>
+                    <div className="space-y-3">
+                      <button
+                        type="button"
+                        onClick={handleStartAttention}
+                        disabled={
+                          startAttentionForm.processing ||
+                          markNoShowForm.processing
+                        }
+                        className="w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {startAttentionForm.processing
+                          ? "Starting..."
+                          : "Start attention"}
+                      </button>
+
+                      {noShowRemainingSeconds > 0 && (
+                        <p className="text-center text-xs font-medium text-slate-500">
+                          No-show available in {noShowRemainingSeconds} seconds.
+                        </p>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={handleMarkNoShow}
+                        disabled={!canMarkNoShow}
+                        className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {markNoShowForm.processing
+                          ? "Marking..."
+                          : "Mark no-show"}
+                      </button>
+                    </div>
                   )}
 
                   {activeTicketStatus === "in_attention" && (

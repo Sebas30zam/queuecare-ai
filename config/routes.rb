@@ -21,6 +21,10 @@ Rails.application.routes.draw do
         to: "agent_queues#finish_attention",
         as: :finish_ticket_attention
 
+  patch "/agent-queue/tickets/:id/no-show",
+        to: "agent_queues#mark_no_show",
+        as: :mark_ticket_no_show
+
   get "/tickets/reception", to: "tickets#reception", as: :tickets_reception
   post "/tickets", to: "tickets#create", as: :tickets
 
