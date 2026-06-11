@@ -238,6 +238,159 @@ class AgentQueuesControllerTest < ActionDispatch::IntegrationTest
     )
   end
 
+  test "agent marks own called ticket as no show" do
+    agent = users(:agent_user)
+    prepare_called_ticket(assigned_agent: agent)
+    login_as(agent)
+
+    patch mark_ticket_no_show_url(@pending_ticket)
+
+    assert_redirected_to agent_queue_url(
+      service_window_id: @service_window.id
+    )
+
+    @pending_ticket.reload
+
+    assert_equal "no_show", @pending_ticket.status
+    assert_equal Time.current, @pending_ticket.no_show_at
+    assert_equal agent, @pending_ticket.assigned_agent
+    assert_equal @service_window, @pending_ticket.service_window
+    assert_equal(
+      "Ticket #{@pending_ticket.ticket_number} marked as no-show.",
+      flash[:notice]
+    )
+  end
+
+  test "admin marks own called ticket as no show" do
+    admin = users(:admin_user)
+    prepare_called_ticket(assigned_agent: admin)
+    login_as(admin)
+
+    patch mark_ticket_no_show_url(@pending_ticket)
+
+    assert_redirected_to agent_queue_url(
+      service_window_id: @service_window.id
+    )
+
+    @pending_ticket.reload
+
+    assert_equal "no_show", @pending_ticket.status
+    assert_equal Time.current, @pending_ticket.no_show_at
+    assert_equal admin, @pending_ticket.assigned_agent
+    assert_equal @service_window, @pending_ticket.service_window
+  end
+
+  test "cannot mark ticket assigned to another agent as no show" do
+    prepare_called_ticket(assigned_agent: users(:admin_user))
+    login_as(users(:agent_user))
+
+    patch mark_ticket_no_show_url(@pending_ticket)
+
+    assert_redirected_to agent_queue_url(
+      service_window_id: @service_window.id
+    )
+
+    assert_equal "called", @pending_ticket.reload.status
+    assert_nil @pending_ticket.no_show_at
+    assert_equal "Ticket is assigned to another agent", flash[:alert]
+  end
+
+  test "cannot mark ticket with invalid status as no show" do
+    agent = users(:agent_user)
+    @pending_ticket.update!(
+      assigned_agent: agent,
+      service_window: @service_window,
+      status: "pending",
+      called_at: nil,
+      no_show_at: nil
+    )
+    login_as(agent)
+
+    patch mark_ticket_no_show_url(@pending_ticket)
+
+    assert_redirected_to agent_queue_url(
+      service_window_id: @service_window.id
+    )
+
+    assert_equal "pending", @pending_ticket.reload.status
+    assert_nil @pending_ticket.no_show_at
+    assert_equal(
+      "Ticket must be called before it can be marked as no-show",
+      flash[:alert]
+    )
+  end
+
+  test "receptionist cannot use mark no show" do
+    prepare_called_ticket(assigned_agent: users(:agent_user))
+    login_as(users(:receptionist_user))
+
+    patch mark_ticket_no_show_url(@pending_ticket)
+
+    assert_redirected_to root_url
+    assert_equal "called", @pending_ticket.reload.status
+    assert_nil @pending_ticket.no_show_at
+    assert_equal(
+      "You are not authorized to access this page.",
+      flash[:alert]
+    )
+  end
+
+  test "supervisor cannot use mark no show" do
+    prepare_called_ticket(assigned_agent: users(:agent_user))
+    login_as(users(:supervisor_user))
+
+    patch mark_ticket_no_show_url(@pending_ticket)
+
+    assert_redirected_to root_url
+    assert_equal "called", @pending_ticket.reload.status
+    assert_nil @pending_ticket.no_show_at
+    assert_equal(
+      "You are not authorized to access this page.",
+      flash[:alert]
+    )
+  end
+
+  test "agent can call another ticket after previous ticket becomes no show" do
+    agent = users(:agent_user)
+    prepare_called_ticket(assigned_agent: agent)
+
+    next_ticket = Ticket.create!(
+      queue_service: @service_window.queue_service,
+      ticket_number: "ADM-002",
+      sequence_date: Date.new(2026, 6, 9),
+      daily_sequence: 2,
+      priority: "normal",
+      priority_weight: 6,
+      status: "pending",
+      intake_source: "self_service"
+    )
+
+    login_as(agent)
+
+    patch mark_ticket_no_show_url(@pending_ticket)
+
+    assert_redirected_to agent_queue_url(
+      service_window_id: @service_window.id
+    )
+
+    assert_equal "no_show", @pending_ticket.reload.status
+
+    post call_next_ticket_url, params: {
+      service_window_id: @service_window.id
+    }
+
+    assert_redirected_to agent_queue_url(
+      service_window_id: @service_window.id
+    )
+
+    next_ticket.reload
+
+    assert_equal "called", next_ticket.status
+    assert_equal agent, next_ticket.assigned_agent
+    assert_equal @service_window, next_ticket.service_window
+    assert_equal Time.current, next_ticket.called_at
+  end
+
   test "receptionist cannot use attention actions" do
     prepare_called_ticket(assigned_agent: users(:agent_user))
     login_as(users(:receptionist_user))
