@@ -1,6 +1,10 @@
 Rails.application.routes.draw do
   root "home#index"
 
+  get "/public-screen",
+      to: "public_screens#index",
+      as: :public_screen
+
   resources :users, only: [:index]
   resources :queue_services, only: [:index]
   resources :service_windows, only: [:index]
