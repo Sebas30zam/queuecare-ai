@@ -7,6 +7,7 @@ self_service_ticket:
   priority_weight: 6
   status: pending
   intake_source: self_service
+  survey_token: survey-token-self-service-001
 
 assisted_senior_ticket:
   queue_service: finance
@@ -20,3 +21,4 @@ assisted_senior_ticket:
   status: pending
   intake_source: assisted
   assistance_type: senior
+  survey_token: survey-token-assisted-senior-001

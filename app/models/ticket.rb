@@ -34,6 +34,15 @@ class Ticket < ApplicationRecord
   belongs_to :created_by, class_name: "User", optional: true
   belongs_to :assigned_agent, class_name: "User", optional: true
 
+  has_one :satisfaction_survey,
+          dependent: :restrict_with_exception
+
+  has_secure_token :survey_token
+
+  validates :survey_token,
+            presence: true,
+            uniqueness: true
+
   validates :ticket_number,
             presence: true,
             uniqueness: { scope: :sequence_date }

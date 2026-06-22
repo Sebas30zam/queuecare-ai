@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_09_220221) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_22_063709) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -41,6 +41,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_220221) do
     t.string "name", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_roles_on_name", unique: true
+  end
+
+  create_table "satisfaction_surveys", force: :cascade do |t|
+    t.text "comment"
+    t.datetime "created_at", null: false
+    t.integer "rating", null: false
+    t.datetime "submitted_at"
+    t.bigint "ticket_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ticket_id"], name: "index_satisfaction_surveys_on_ticket_id", unique: true
   end
 
   create_table "service_windows", force: :cascade do |t|
@@ -76,6 +86,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_220221) do
     t.bigint "service_window_id"
     t.datetime "started_at"
     t.string "status", null: false
+    t.string "survey_token", null: false
     t.string "ticket_number", null: false
     t.datetime "updated_at", null: false
     t.index ["assigned_agent_id"], name: "index_tickets_on_assigned_agent_id"
@@ -86,6 +97,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_220221) do
     t.index ["queue_service_id"], name: "index_tickets_on_queue_service_id"
     t.index ["service_window_id"], name: "index_tickets_on_service_window_id"
     t.index ["status"], name: "index_tickets_on_status"
+    t.index ["survey_token"], name: "index_tickets_on_survey_token", unique: true
     t.index ["ticket_number", "sequence_date"], name: "index_tickets_on_ticket_number_and_sequence_date", unique: true
   end
 
@@ -102,6 +114,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_220221) do
   end
 
   add_foreign_key "daily_sequences", "queue_services"
+  add_foreign_key "satisfaction_surveys", "tickets"
   add_foreign_key "service_windows", "queue_services"
   add_foreign_key "tickets", "queue_services"
   add_foreign_key "tickets", "service_windows"
