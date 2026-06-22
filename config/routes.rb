@@ -5,6 +5,14 @@ Rails.application.routes.draw do
       to: "public_screens#index",
       as: :public_screen
 
+  get "/satisfaction-survey/:survey_token",
+      to: "satisfaction_surveys#show",
+      as: :satisfaction_survey
+
+  post "/satisfaction-survey/:survey_token",
+       to: "satisfaction_surveys#create",
+       as: :submit_satisfaction_survey
+
   resources :users, only: [:index]
   resources :queue_services, only: [:index]
   resources :service_windows, only: [:index]
