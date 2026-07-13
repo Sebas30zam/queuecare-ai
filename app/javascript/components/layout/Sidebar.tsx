@@ -22,6 +22,11 @@ type NavigationItem = {
 
 const navigationItems: NavigationItem[] = [
   { label: "Home", href: "/" },
+  {
+    label: "Dashboard",
+    href: "/dashboard",
+    allowedRoles: ["admin", "supervisor"],
+  },
   { label: "Users", href: "/users", allowedRoles: ["admin", "supervisor"] },
   { label: "Queue Services", href: "/queue_services", allowedRoles: ["admin", "supervisor"] },
   { label: "Service Windows", href: "/service_windows", allowedRoles: ["admin", "supervisor"] },
@@ -48,7 +53,7 @@ export default function Sidebar() {
   })
 
   return (
-    <aside className="hidden min-h-screen w-64 border-r border-slate-200 bg-white px-5 py-5 lg:flex lg:flex-col">
+    <aside className="hidden min-h-screen w-64 shrink-0 border-r border-slate-200 bg-white px-5 py-5 lg:flex lg:flex-col">
       <div className="mb-8 flex items-center gap-2">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
           Q
