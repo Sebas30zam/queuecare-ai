@@ -17,6 +17,10 @@ Rails.application.routes.draw do
   resources :queue_services, only: [:index]
   resources :service_windows, only: [:index]
 
+  get "/dashboard",
+      to: "dashboard#index",
+      as: :dashboard
+
   get "/agent-queue",
       to: "agent_queues#index",
       as: :agent_queue
