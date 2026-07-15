@@ -1,16 +1,16 @@
-import AppLayout from "../../layouts/AppLayout"
+import AppLayout from "../../layouts/AppLayout";
 
 type UserRecord = {
-  id: number
-  name: string
-  email: string
-  role: string
-  active: boolean
-}
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  active: boolean;
+};
 
 type UsersIndexProps = {
-  users: UserRecord[]
-}
+  users: UserRecord[];
+};
 
 export default function UsersIndex({ users }: UsersIndexProps) {
   return (
@@ -86,24 +86,16 @@ export default function UsersIndex({ users }: UsersIndexProps) {
               <tbody className="divide-y divide-slate-200 bg-white">
                 {users.map((user) => (
                   <tr key={user.id}>
-                    <td className="px-4 py-3 text-sm font-medium text-slate-900">
-                      {user.name}
-                    </td>
+                    <td className="px-4 py-3 text-sm font-medium text-slate-900">{user.name}</td>
 
-                    <td className="px-4 py-3 text-sm text-slate-600">
-                      {user.email}
-                    </td>
+                    <td className="px-4 py-3 text-sm text-slate-600">{user.email}</td>
 
-                    <td className="px-4 py-3 text-sm text-slate-600">
-                      {user.role}
-                    </td>
+                    <td className="px-4 py-3 text-sm text-slate-600">{user.role}</td>
 
                     <td className="px-4 py-3 text-sm">
                       <span
                         className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                          user.active
-                            ? "bg-green-50 text-green-700"
-                            : "bg-slate-100 text-slate-600"
+                          user.active ? "bg-green-50 text-green-700" : "bg-slate-100 text-slate-600"
                         }`}
                       >
                         {user.active ? "Activo" : "Inactivo"}
@@ -121,5 +113,5 @@ export default function UsersIndex({ users }: UsersIndexProps) {
         </div>
       </section>
     </AppLayout>
-  )
+  );
 }

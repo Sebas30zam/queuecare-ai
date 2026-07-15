@@ -13,9 +13,9 @@ Rails.application.routes.draw do
        to: "satisfaction_surveys#create",
        as: :submit_satisfaction_survey
 
-  resources :users, only: [:index]
-  resources :queue_services, only: [:index]
-  resources :service_windows, only: [:index]
+  resources :users, only: [ :index ]
+  resources :queue_services, only: [ :index ]
+  resources :service_windows, only: [ :index ]
 
   get "/dashboard",
       to: "dashboard#index",

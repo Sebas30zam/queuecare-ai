@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+set -u
+
+echo "========================================"
+echo " QueueCare AI - Code Quality Autofix"
+echo "========================================"
+echo
+
+echo "[1/3] Applying RuboCop safe autocorrections..."
+bin/rubocop -a
+
+echo
+echo "[2/3] Applying ESLint fixes..."
+npm run lint:fix
+
+echo
+echo "[3/3] Applying Prettier formatting..."
+npm run format
+
+echo
+echo "========================================"
+echo " Running final code quality verification"
+echo "========================================"
+echo
+
+bin/code_quality

@@ -68,7 +68,7 @@ module Tickets
     end
 
     def failure(message)
-      Result.new(ticket: nil, errors: [message])
+      Result.new(ticket: nil, errors: [ message ])
     end
   end
 end

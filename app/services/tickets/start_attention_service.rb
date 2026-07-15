@@ -55,7 +55,7 @@ module Tickets
     attr_reader :current_user, :ticket
 
     def failure(message)
-      Result.new(ticket: nil, errors: [message])
+      Result.new(ticket: nil, errors: [ message ])
     end
   end
 end

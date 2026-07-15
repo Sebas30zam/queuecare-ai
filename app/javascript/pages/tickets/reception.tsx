@@ -1,61 +1,61 @@
-import { router, useForm, usePage } from "@inertiajs/react"
-import type { FormEvent } from "react"
-import { useState } from "react"
+import { router, useForm, usePage } from "@inertiajs/react";
+import type { FormEvent } from "react";
+import { useState } from "react";
 
-import AppLayout from "../../layouts/AppLayout"
-import type { FlashData } from "../../types"
+import AppLayout from "../../layouts/AppLayout";
+import type { FlashData } from "../../types";
 
 type QueueServiceRecord = {
-  id: number
-  name: string
-  code: string
-}
+  id: number;
+  name: string;
+  code: string;
+};
 
 type RecentTicketRecord = {
-  id: number
-  ticket_number: string
-  service: QueueServiceRecord
-  priority: string
-  assistance_type: string | null
-  intake_source: string
-  status: string
-  created_at: string
-}
+  id: number;
+  ticket_number: string;
+  service: QueueServiceRecord;
+  priority: string;
+  assistance_type: string | null;
+  intake_source: string;
+  status: string;
+  created_at: string;
+};
 
 type TicketReceptionProps = {
-  queue_services: QueueServiceRecord[]
-  assistance_types: string[]
-  recent_tickets: RecentTicketRecord[]
-}
+  queue_services: QueueServiceRecord[];
+  assistance_types: string[];
+  recent_tickets: RecentTicketRecord[];
+};
 
 type TicketFormData = {
-  queue_service_id: string
-  assistance_type: string
-}
+  queue_service_id: string;
+  assistance_type: string;
+};
 
 type SharedPageProps = {
-  flash?: FlashData
-}
+  flash?: FlashData;
+};
 
 const assistanceLabels: Record<string, string> = {
   disability: "Disability",
   senior: "Senior adult",
   pregnancy: "Pregnancy",
   appointment: "Scheduled appointment",
-}
+};
 
 function formatCreatedAt(createdAt: string) {
   return new Date(createdAt).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
-  })
+  });
 }
 
 function formatStatus(status: string) {
   return status
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ")
+    .join(" ");
 }
 
 export default function TicketReception({
@@ -63,54 +63,56 @@ export default function TicketReception({
   assistance_types: assistanceTypes,
   recent_tickets: recentTickets,
 }: TicketReceptionProps) {
-  const { props } = usePage<SharedPageProps>()
-  const flash = props.flash
-  const [requestAssistance, setRequestAssistance] = useState(false)
+  const { props } = usePage<SharedPageProps>();
+  const flash = props.flash;
+  const [requestAssistance, setRequestAssistance] = useState(false);
 
   const form = useForm<TicketFormData>({
     queue_service_id: "",
     assistance_type: "",
-  })
+  });
 
   const canSubmit =
     form.data.queue_service_id !== "" &&
     (!requestAssistance || form.data.assistance_type !== "") &&
-    !form.processing
+    !form.processing;
 
   const handleAssistanceChange = (checked: boolean) => {
-    setRequestAssistance(checked)
+    setRequestAssistance(checked);
 
     if (!checked) {
-      form.setData("assistance_type", "")
+      form.setData("assistance_type", "");
     }
-  }
+  };
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+    event.preventDefault();
 
     form.transform((formData) => ({
       ticket: {
         queue_service_id: formData.queue_service_id,
-        assistance_type: requestAssistance
-          ? formData.assistance_type
-          : "",
+        assistance_type: requestAssistance ? formData.assistance_type : "",
       },
-    }))
+    }));
 
     form.post("/tickets", {
       preserveScroll: true,
       onSuccess: () => {
-        form.reset()
-        setRequestAssistance(false)
+        form.reset();
+        setRequestAssistance(false);
       },
-    })
-  }
+    });
+  };
 
   const handleCancelTicket = (ticket: RecentTicketRecord) => {
-    router.patch(`/tickets/${ticket.id}/cancel`, {}, {
-      preserveScroll: true,
-    })
-  }
+    router.patch(
+      `/tickets/${ticket.id}/cancel`,
+      {},
+      {
+        preserveScroll: true,
+      },
+    );
+  };
 
   return (
     <AppLayout>
@@ -121,8 +123,7 @@ export default function TicketReception({
           </h1>
 
           <p className="mt-2 text-sm text-slate-600">
-            Create a ticket for someone who needs help using the self-service
-            process.
+            Create a ticket for someone who needs help using the self-service process.
           </p>
         </div>
 
@@ -144,13 +145,10 @@ export default function TicketReception({
             className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
           >
             <div className="border-b border-slate-200 px-6 py-5">
-              <h2 className="text-lg font-bold text-slate-950">
-                Create Assisted Ticket
-              </h2>
+              <h2 className="text-lg font-bold text-slate-950">Create Assisted Ticket</h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                The ticket will use normal priority unless assistance is
-                requested.
+                The ticket will use normal priority unless assistance is requested.
               </p>
             </div>
 
@@ -163,9 +161,7 @@ export default function TicketReception({
                 <select
                   required
                   value={form.data.queue_service_id}
-                  onChange={(event) =>
-                    form.setData("queue_service_id", event.target.value)
-                  }
+                  onChange={(event) => form.setData("queue_service_id", event.target.value)}
                   className="mt-2 w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 >
                   <option value="">Select a service</option>
@@ -183,9 +179,7 @@ export default function TicketReception({
                   <input
                     type="checkbox"
                     checked={requestAssistance}
-                    onChange={(event) =>
-                      handleAssistanceChange(event.target.checked)
-                    }
+                    onChange={(event) => handleAssistanceChange(event.target.checked)}
                     className="mt-1 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                   />
 
@@ -195,8 +189,8 @@ export default function TicketReception({
                     </span>
 
                     <span className="mt-1 block text-xs leading-5 text-slate-500">
-                      Use this option for senior adults, disability, pregnancy,
-                      or a scheduled appointment.
+                      Use this option for senior adults, disability, pregnancy, or a scheduled
+                      appointment.
                     </span>
                   </span>
                 </label>
@@ -210,9 +204,7 @@ export default function TicketReception({
                     <select
                       required
                       value={form.data.assistance_type}
-                      onChange={(event) =>
-                        form.setData("assistance_type", event.target.value)
-                      }
+                      onChange={(event) => form.setData("assistance_type", event.target.value)}
                       className="mt-2 w-full rounded-lg border-slate-300 bg-white text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     >
                       <option value="">Select assistance type</option>
@@ -236,8 +228,8 @@ export default function TicketReception({
               <button
                 type="button"
                 onClick={() => {
-                  form.reset()
-                  setRequestAssistance(false)
+                  form.reset();
+                  setRequestAssistance(false);
                 }}
                 disabled={form.processing}
                 className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-50"
@@ -260,9 +252,7 @@ export default function TicketReception({
               <div>
                 <h2 className="font-bold text-slate-950">Recent Tickets</h2>
 
-                <p className="mt-1 text-xs text-slate-500">
-                  Latest tickets in the system
-                </p>
+                <p className="mt-1 text-xs text-slate-500">Latest tickets in the system</p>
               </div>
 
               <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
@@ -273,21 +263,14 @@ export default function TicketReception({
             <div className="mt-4 space-y-3">
               {recentTickets.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-slate-300 px-4 py-8 text-center">
-                  <p className="text-sm font-medium text-slate-600">
-                    No tickets created yet.
-                  </p>
+                  <p className="text-sm font-medium text-slate-600">No tickets created yet.</p>
                 </div>
               ) : (
                 recentTickets.map((ticket) => (
-                  <article
-                    key={ticket.id}
-                    className="border-l-2 border-blue-600 py-1 pl-4"
-                  >
+                  <article key={ticket.id} className="border-l-2 border-blue-600 py-1 pl-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-bold text-slate-950">
-                          {ticket.ticket_number}
-                        </p>
+                        <p className="font-bold text-slate-950">{ticket.ticket_number}</p>
 
                         <p className="mt-1 text-xs font-medium text-slate-600">
                           {ticket.service.name}
@@ -309,9 +292,7 @@ export default function TicketReception({
 
                     <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
                       <span>
-                        {ticket.intake_source === "self_service"
-                          ? "Self-service"
-                          : "Assisted"}
+                        {ticket.intake_source === "self_service" ? "Self-service" : "Assisted"}
                       </span>
 
                       <span>{formatCreatedAt(ticket.created_at)}</span>
@@ -336,5 +317,5 @@ export default function TicketReception({
         </div>
       </section>
     </AppLayout>
-  )
+  );
 }

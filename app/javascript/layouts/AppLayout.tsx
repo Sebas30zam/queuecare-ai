@@ -1,11 +1,11 @@
-import type { ReactNode } from "react"
+import type { ReactNode } from "react";
 
-import Navbar from "../components/layout/Navbar"
-import Sidebar from "../components/layout/Sidebar"
+import Navbar from "../components/layout/Navbar";
+import Sidebar from "../components/layout/Sidebar";
 
 type AppLayoutProps = {
-  children: ReactNode
-}
+  children: ReactNode;
+};
 
 export default function AppLayout({ children }: AppLayoutProps) {
   return (
@@ -16,11 +16,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <Navbar />
 
-          <main className="flex-1 px-6 py-6">
-            {children}
-          </main>
+          <main className="flex-1 px-6 py-6">{children}</main>
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -55,7 +55,7 @@ module SatisfactionSurveys
     attr_reader :ticket, :rating, :comment
 
     def failure(message)
-      Result.new(survey: nil, errors: [message])
+      Result.new(survey: nil, errors: [ message ])
     end
   end
 end

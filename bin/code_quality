@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+set -u
+
+failed=0
+
+echo "========================================"
+echo " QueueCare AI - Code Quality Checks"
+echo "========================================"
+echo
+
+echo "[1/3] Running RuboCop..."
+if bin/rubocop; then
+  echo "✅ RuboCop passed"
+else
+  echo "❌ RuboCop found issues"
+  failed=1
+fi
+
+echo
+echo "[2/3] Running ESLint..."
+if npm run lint; then
+  echo "✅ ESLint passed"
+else
+  echo "❌ ESLint found issues"
+  failed=1
+fi
+
+echo
+echo "[3/3] Running Prettier..."
+if npm run format:check; then
+  echo "✅ Prettier passed"
+else
+  echo "❌ Prettier found formatting issues"
+  failed=1
+fi
+
+echo
+echo "========================================"
+
+if [ "$failed" -eq 0 ]; then
+  echo "✅ All code quality checks passed"
+  echo "========================================"
+  exit 0
+else
+  echo "❌ Code quality checks failed"
+  echo "========================================"
+  exit 1
+fi

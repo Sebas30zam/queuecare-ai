@@ -1,50 +1,46 @@
-import { Head, router } from "@inertiajs/react"
-import { useEffect } from "react"
+import { Head, router } from "@inertiajs/react";
+import { useEffect } from "react";
 
-import GuestLayout from "../../layouts/GuestLayout"
+import GuestLayout from "../../layouts/GuestLayout";
 
 type QueueServiceRecord = {
-  id: number
-  name: string
-  code: string
-}
+  id: number;
+  name: string;
+  code: string;
+};
 
 type ServiceWindowRecord = {
-  id: number
-  name: string
-  code: string
-}
+  id: number;
+  name: string;
+  code: string;
+};
 
 type AssignedAgentRecord = {
-  id: number
-  name: string
-}
+  id: number;
+  name: string;
+};
 
 type PublicScreenTicket = {
-  id: number
-  ticket_number: string
-  status:
-    | "called"
-    | "in_attention"
-    | "attended"
-    | "no_show"
-  called_at: string
-  queue_service: QueueServiceRecord
-  service_window: ServiceWindowRecord | null
-  assigned_agent: AssignedAgentRecord | null
-}
+  id: number;
+  ticket_number: string;
+  status: "called" | "in_attention" | "attended" | "no_show";
+  called_at: string;
+  queue_service: QueueServiceRecord;
+  service_window: ServiceWindowRecord | null;
+  assigned_agent: AssignedAgentRecord | null;
+};
 
 type PublicScreenProps = {
-  active_tickets: PublicScreenTicket[]
-  recently_called_tickets: PublicScreenTicket[]
-  generated_at: string
-}
+  active_tickets: PublicScreenTicket[];
+  recently_called_tickets: PublicScreenTicket[];
+  generated_at: string;
+};
 
 function formatTime(dateTime: string) {
   return new Date(dateTime).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
-  })
+  });
 }
 
 function formatStatus(status: PublicScreenTicket["status"]) {
@@ -53,9 +49,9 @@ function formatStatus(status: PublicScreenTicket["status"]) {
     in_attention: "In attention",
     attended: "Attended",
     no_show: "No-show",
-  }
+  };
 
-  return statusLabels[status]
+  return statusLabels[status];
 }
 
 function BellIcon() {
@@ -78,7 +74,7 @@ function BellIcon() {
         0m5.714 0a3 3 0 1 1-5.714 0"
       />
     </svg>
-  )
+  );
 }
 
 function ClockIcon() {
@@ -94,7 +90,7 @@ function ClockIcon() {
       <circle cx="12" cy="12" r="8.5" />
       <path strokeLinecap="round" d="M12 7.5V12l3 2" />
     </svg>
-  )
+  );
 }
 
 function MonitorIcon() {
@@ -110,30 +106,26 @@ function MonitorIcon() {
       <rect x="3" y="4" width="18" height="13" rx="2" />
       <path strokeLinecap="round" d="M9 21h6M12 17v4" />
     </svg>
-  )
+  );
 }
 
 function RecentTicketCard({
   ticket,
   highlighted,
 }: {
-  ticket: PublicScreenTicket
-  highlighted: boolean
+  ticket: PublicScreenTicket;
+  highlighted: boolean;
 }) {
   return (
     <article
       className={[
         "rounded-xl border bg-slate-900/80 px-6 py-5",
-        highlighted
-          ? "border-slate-700 border-l-4 border-l-sky-400"
-          : "border-slate-800",
+        highlighted ? "border-slate-700 border-l-4 border-l-sky-400" : "border-slate-800",
       ].join(" ")}
     >
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-            Ticket
-          </p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Ticket</p>
 
           <p
             className={[
@@ -167,9 +159,7 @@ function RecentTicketCard({
           </p>
 
           {ticket.service_window && (
-            <p className="mt-1 text-sm text-slate-500">
-              {ticket.service_window.code}
-            </p>
+            <p className="mt-1 text-sm text-slate-500">{ticket.service_window.code}</p>
           )}
         </div>
       </div>
@@ -179,7 +169,7 @@ function RecentTicketCard({
         <span>{formatTime(ticket.called_at)}</span>
       </div>
     </article>
-  )
+  );
 }
 
 export default function PublicScreen({
@@ -190,24 +180,20 @@ export default function PublicScreen({
   useEffect(() => {
     const intervalId = window.setInterval(() => {
       router.reload({
-        only: [
-          "active_tickets",
-          "recently_called_tickets",
-          "generated_at",
-        ],
-      })
-    }, 5_000)
+        only: ["active_tickets", "recently_called_tickets", "generated_at"],
+      });
+    }, 5_000);
 
-    return () => window.clearInterval(intervalId)
-  }, [])
+    return () => window.clearInterval(intervalId);
+  }, []);
 
-  const currentTicket = activeTickets[0] ?? null
+  const currentTicket = activeTickets[0] ?? null;
 
   const recentTickets = recentlyCalledTickets
     .filter((ticket) => ticket.id !== currentTicket?.id)
-    .slice(0, 3)
+    .slice(0, 3);
 
-  const emptyCardCount = Math.max(3 - recentTickets.length, 0)
+  const emptyCardCount = Math.max(3 - recentTickets.length, 0);
 
   return (
     <GuestLayout>
@@ -228,9 +214,7 @@ export default function PublicScreen({
             </span>
           </div>
 
-          <time className="text-sm font-medium text-slate-400">
-            {formatTime(generatedAt)}
-          </time>
+          <time className="text-sm font-medium text-slate-400">{formatTime(generatedAt)}</time>
         </header>
 
         <main className="grid flex-1 gap-5 p-5 md:p-8 lg:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.85fr)]">
@@ -293,13 +277,9 @@ export default function PublicScreen({
                   <BellIcon />
                 </div>
 
-                <h1 className="mt-6 text-4xl font-extrabold">
-                  Waiting for the next ticket
-                </h1>
+                <h1 className="mt-6 text-4xl font-extrabold">Waiting for the next ticket</h1>
 
-                <p className="mt-3 text-lg text-slate-500">
-                  New calls will appear automatically.
-                </p>
+                <p className="mt-3 text-lg text-slate-500">New calls will appear automatically.</p>
               </div>
             )}
           </section>
@@ -323,11 +303,7 @@ export default function PublicScreen({
 
             <div className="space-y-4">
               {recentTickets.map((ticket, index) => (
-                <RecentTicketCard
-                  key={ticket.id}
-                  ticket={ticket}
-                  highlighted={index === 0}
-                />
+                <RecentTicketCard key={ticket.id} ticket={ticket} highlighted={index === 0} />
               ))}
 
               {Array.from({ length: emptyCardCount }).map((_, index) => (
@@ -344,9 +320,7 @@ export default function PublicScreen({
 
         <div className="bg-sky-500 px-5 py-4 text-center text-base font-black uppercase tracking-[0.14em] text-slate-950 sm:text-xl">
           <span className="text-sky-100">•</span>
-          <span className="mx-4">
-            Please stay attentive for your turn
-          </span>
+          <span className="mx-4">Please stay attentive for your turn</span>
           <span className="text-sky-100">•</span>
         </div>
 
@@ -360,5 +334,5 @@ export default function PublicScreen({
         </footer>
       </div>
     </GuestLayout>
-  )
+  );
 }
