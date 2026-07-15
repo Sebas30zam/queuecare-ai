@@ -1,22 +1,22 @@
-import AppLayout from "../../layouts/AppLayout"
+import AppLayout from "../../layouts/AppLayout";
 
 type QueueServiceRecord = {
-  id: number
-  name: string
-  code: string
-}
+  id: number;
+  name: string;
+  code: string;
+};
 
 type ServiceWindowRecord = {
-  id: number
-  name: string
-  code: string
-  active: boolean
-  queue_service: QueueServiceRecord
-}
+  id: number;
+  name: string;
+  code: string;
+  active: boolean;
+  queue_service: QueueServiceRecord;
+};
 
 type ServiceWindowsIndexProps = {
-  service_windows: ServiceWindowRecord[]
-}
+  service_windows: ServiceWindowRecord[];
+};
 
 export default function ServiceWindowsIndex({
   service_windows: serviceWindows,
@@ -26,9 +26,7 @@ export default function ServiceWindowsIndex({
       <section className="space-y-6">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-950">
-              Service Windows
-            </h1>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-950">Service Windows</h1>
 
             <p className="mt-2 text-sm text-slate-600">
               Manage the attention windows assigned to QueueCare AI services.
@@ -109,5 +107,5 @@ export default function ServiceWindowsIndex({
         </div>
       </section>
     </AppLayout>
-  )
+  );
 }

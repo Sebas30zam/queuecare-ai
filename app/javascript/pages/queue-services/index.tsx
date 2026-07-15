@@ -1,17 +1,17 @@
-import AppLayout from "../../layouts/AppLayout"
+import AppLayout from "../../layouts/AppLayout";
 
 type QueueServiceRecord = {
-  id: number
-  name: string
-  code: string
-  description: string | null
-  active: boolean
-  estimated_attention_minutes: number | null
-}
+  id: number;
+  name: string;
+  code: string;
+  description: string | null;
+  active: boolean;
+  estimated_attention_minutes: number | null;
+};
 
 type QueueServicesIndexProps = {
-  queue_services: QueueServiceRecord[]
-}
+  queue_services: QueueServiceRecord[];
+};
 
 export default function QueueServicesIndex({
   queue_services: queueServices,
@@ -21,9 +21,7 @@ export default function QueueServicesIndex({
       <section className="space-y-6">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-950">
-              Service Directory
-            </h1>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-950">Service Directory</h1>
 
             <p className="mt-2 text-sm text-slate-600">
               Manage the attention services available for QueueCare AI operations.
@@ -62,9 +60,7 @@ export default function QueueServicesIndex({
               <tbody className="divide-y divide-slate-200 bg-white">
                 {queueServices.map((service) => (
                   <tr key={service.id}>
-                    <td className="px-4 py-3 text-sm font-medium text-slate-900">
-                      {service.name}
-                    </td>
+                    <td className="px-4 py-3 text-sm font-medium text-slate-900">{service.name}</td>
 
                     <td className="px-4 py-3 text-sm text-slate-600">
                       <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">
@@ -101,5 +97,5 @@ export default function QueueServicesIndex({
         </div>
       </section>
     </AppLayout>
-  )
+  );
 }

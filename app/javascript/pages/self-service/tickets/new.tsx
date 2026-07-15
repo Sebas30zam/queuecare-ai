@@ -1,100 +1,98 @@
-import { useForm, usePage } from "@inertiajs/react"
-import type { FormEvent } from "react"
-import { useEffect, useState } from "react"
+import { useForm, usePage } from "@inertiajs/react";
+import type { FormEvent } from "react";
+import { useEffect, useState } from "react";
 
-import GuestLayout from "../../../layouts/GuestLayout"
-import type { FlashData } from "../../../types"
+import GuestLayout from "../../../layouts/GuestLayout";
+import type { FlashData } from "../../../types";
 
 type QueueServiceRecord = {
-  id: number
-  name: string
-  code: string
-}
+  id: number;
+  name: string;
+  code: string;
+};
 
 type GeneratedTicket = {
-  ticket_number: string
-  service_name: string
-  assistance_type: string | null
-}
+  ticket_number: string;
+  service_name: string;
+  assistance_type: string | null;
+};
 
 type SelfServiceTicketProps = {
-  queue_services: QueueServiceRecord[]
-  assistance_types: string[]
-  generated_ticket: GeneratedTicket | null
-}
+  queue_services: QueueServiceRecord[];
+  assistance_types: string[];
+  generated_ticket: GeneratedTicket | null;
+};
 
 type TicketFormData = {
-  queue_service_id: string
-  assistance_type: string
-}
+  queue_service_id: string;
+  assistance_type: string;
+};
 
 type SharedPageProps = {
-  flash?: FlashData
-}
+  flash?: FlashData;
+};
 
 const assistanceLabels: Record<string, string> = {
   disability: "Disability",
   senior: "Senior adult",
   pregnancy: "Pregnancy",
   appointment: "Scheduled appointment",
-}
+};
 
 export default function NewSelfServiceTicket({
   queue_services: queueServices,
   assistance_types: assistanceTypes,
   generated_ticket: generatedTicket,
 }: SelfServiceTicketProps) {
-  const { props } = usePage<SharedPageProps>()
-  const flash = props.flash
+  const { props } = usePage<SharedPageProps>();
+  const flash = props.flash;
 
-  const [requestAssistance, setRequestAssistance] = useState(false)
+  const [requestAssistance, setRequestAssistance] = useState(false);
 
   const form = useForm<TicketFormData>({
     queue_service_id: "",
     assistance_type: "",
-  })
+  });
 
   useEffect(() => {
-    if (!generatedTicket) return
+    if (!generatedTicket) return;
 
     const timeoutId = window.setTimeout(() => {
-      window.location.href = "/self-service"
-    }, 10_000)
+      window.location.href = "/self-service";
+    }, 10_000);
 
-    return () => window.clearTimeout(timeoutId)
-  }, [generatedTicket])
+    return () => window.clearTimeout(timeoutId);
+  }, [generatedTicket]);
 
   const selectedService = queueServices.find(
     (service) => String(service.id) === form.data.queue_service_id,
-  )
+  );
 
   const canSubmit =
     form.data.queue_service_id !== "" &&
     (!requestAssistance || form.data.assistance_type !== "") &&
-    !form.processing
+    !form.processing;
 
   const handleAssistanceChange = (checked: boolean) => {
-    setRequestAssistance(checked)
+    setRequestAssistance(checked);
 
     if (!checked) {
-      form.setData("assistance_type", "")
+      form.setData("assistance_type", "");
     }
-  }
+  };
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+    event.preventDefault();
 
     form.transform((formData) => ({
       ticket: {
         queue_service_id: formData.queue_service_id,
-        assistance_type: requestAssistance
-          ? formData.assistance_type
-          : "",
+        assistance_type: requestAssistance ? formData.assistance_type : "",
       },
-    }))
+    }));
 
-    form.post("/self-service/tickets")
-  }
+    form.post("/self-service/tickets");
+  };
 
   if (generatedTicket) {
     return (
@@ -126,8 +124,8 @@ export default function NewSelfServiceTicket({
             )}
 
             <p className="mx-auto mt-7 max-w-sm text-sm leading-6 text-slate-500">
-              Please wait until your ticket number and service window are shown
-              on the public screen.
+              Please wait until your ticket number and service window are shown on the public
+              screen.
             </p>
 
             <p className="mt-4 text-xs font-semibold text-slate-400">
@@ -143,7 +141,7 @@ export default function NewSelfServiceTicket({
           </section>
         </main>
       </GuestLayout>
-    )
+    );
   }
 
   return (
@@ -175,33 +173,25 @@ export default function NewSelfServiceTicket({
             className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-300/40"
           >
             <div className="border-b border-slate-200 px-6 py-6 sm:px-8">
-              <p className="text-sm font-bold uppercase tracking-[0.16em] text-blue-600">
-                Step 1
-              </p>
+              <p className="text-sm font-bold uppercase tracking-[0.16em] text-blue-600">Step 1</p>
 
-              <h2 className="mt-2 text-2xl font-black text-slate-950">
-                Select a service
-              </h2>
+              <h2 className="mt-2 text-2xl font-black text-slate-950">Select a service</h2>
 
               <p className="mt-2 text-sm text-slate-500">
-                Your ticket priority will be normal unless assistance is
-                requested.
+                Your ticket priority will be normal unless assistance is requested.
               </p>
             </div>
 
             <div className="px-6 py-6 sm:px-8">
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {queueServices.map((service) => {
-                  const isSelected =
-                    form.data.queue_service_id === String(service.id)
+                  const isSelected = form.data.queue_service_id === String(service.id);
 
                   return (
                     <button
                       key={service.id}
                       type="button"
-                      onClick={() =>
-                        form.setData("queue_service_id", String(service.id))
-                      }
+                      onClick={() => form.setData("queue_service_id", String(service.id))}
                       className={`rounded-2xl border-2 px-5 py-5 text-left transition ${
                         isSelected
                           ? "border-blue-600 bg-blue-50 shadow-md shadow-blue-600/10"
@@ -210,9 +200,7 @@ export default function NewSelfServiceTicket({
                     >
                       <span
                         className={`inline-flex rounded-lg px-2.5 py-1 text-xs font-black ${
-                          isSelected
-                            ? "bg-blue-600 text-white"
-                            : "bg-slate-100 text-slate-600"
+                          isSelected ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-600"
                         }`}
                       >
                         {service.code}
@@ -222,7 +210,7 @@ export default function NewSelfServiceTicket({
                         {service.name}
                       </span>
                     </button>
-                  )
+                  );
                 })}
               </div>
 
@@ -231,9 +219,7 @@ export default function NewSelfServiceTicket({
                   <input
                     type="checkbox"
                     checked={requestAssistance}
-                    onChange={(event) =>
-                      handleAssistanceChange(event.target.checked)
-                    }
+                    onChange={(event) => handleAssistanceChange(event.target.checked)}
                     className="mt-1 h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                   />
 
@@ -243,8 +229,8 @@ export default function NewSelfServiceTicket({
                     </span>
 
                     <span className="mt-1 block text-sm leading-6 text-slate-500">
-                      Select this option for senior adults, disability,
-                      pregnancy, or a scheduled appointment.
+                      Select this option for senior adults, disability, pregnancy, or a scheduled
+                      appointment.
                     </span>
                   </span>
                 </label>
@@ -252,16 +238,12 @@ export default function NewSelfServiceTicket({
                 {requestAssistance && (
                   <div className="mt-5 border-t border-slate-200 pt-5">
                     <label className="block">
-                      <span className="text-sm font-bold text-slate-700">
-                        Assistance type
-                      </span>
+                      <span className="text-sm font-bold text-slate-700">Assistance type</span>
 
                       <select
                         required
                         value={form.data.assistance_type}
-                        onChange={(event) =>
-                          form.setData("assistance_type", event.target.value)
-                        }
+                        onChange={(event) => form.setData("assistance_type", event.target.value)}
                         className="mt-2 w-full rounded-xl border-slate-300 bg-white px-4 py-3 text-base shadow-sm focus:border-blue-500 focus:ring-blue-500"
                       >
                         <option value="">Select an option</option>
@@ -313,5 +295,5 @@ export default function NewSelfServiceTicket({
         </div>
       </main>
     </GuestLayout>
-  )
+  );
 }

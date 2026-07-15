@@ -134,7 +134,7 @@ module Dashboard
           )
         }
       end.sort_by do |window|
-        [-window[:tickets_created], window[:code]]
+        [ -window[:tickets_created], window[:code] ]
       end
     end
 
@@ -168,7 +168,7 @@ module Dashboard
 
     def operational_insights(hourly_rows, critical_rows)
       peak_hour = hourly_rows.max_by do |item|
-        [item[:tickets_created], -item[:hour]]
+        [ item[:tickets_created], -item[:hour] ]
       end
 
       highest_wait_service = critical_rows.find do |service|

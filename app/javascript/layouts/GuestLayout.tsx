@@ -1,13 +1,9 @@
-import type { ReactNode } from "react"
+import type { ReactNode } from "react";
 
 type GuestLayoutProps = {
-  children: ReactNode
-}
+  children: ReactNode;
+};
 
 export default function GuestLayout({ children }: GuestLayoutProps) {
-  return (
-    <div className="min-h-screen bg-white text-slate-950">
-      {children}
-    </div>
-  )
+  return <div className="min-h-screen bg-white text-slate-950">{children}</div>;
 }

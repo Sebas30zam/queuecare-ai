@@ -39,7 +39,7 @@ class CreateTickets < ActiveRecord::Migration[8.1]
     end
 
     add_index :tickets,
-              [:ticket_number, :sequence_date],
+              [ :ticket_number, :sequence_date ],
               unique: true
 
     add_index :tickets, :status

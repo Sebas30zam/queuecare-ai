@@ -1,26 +1,26 @@
-import { router, usePage } from "@inertiajs/react"
+import { router, usePage } from "@inertiajs/react";
 
 type AuthUser = {
-  id: number
-  name: string
-  email: string
-  role: string
-}
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+};
 
 type SharedProps = {
   auth?: {
-    user?: AuthUser | null
-  }
-}
+    user?: AuthUser | null;
+  };
+};
 
 export default function Navbar() {
-  const { auth } = usePage<SharedProps>().props
-  const { url } = usePage<SharedProps>()
-  const user = auth?.user
-  const isDashboard = url.startsWith("/dashboard")
+  const { auth } = usePage<SharedProps>().props;
+  const { url } = usePage<SharedProps>();
+  const user = auth?.user;
+  const isDashboard = url.startsWith("/dashboard");
 
   function handleLogout() {
-    router.delete("/logout")
+    router.delete("/logout");
   }
 
   return (
@@ -28,12 +28,8 @@ export default function Navbar() {
       <div className="flex items-center justify-between gap-4">
         {isDashboard ? (
           <div>
-            <p className="text-sm font-bold text-slate-950">
-              Operational Dashboard
-            </p>
-            <p className="text-[10px] text-slate-400">
-              Real-time service monitoring
-            </p>
+            <p className="text-sm font-bold text-slate-950">Operational Dashboard</p>
+            <p className="text-[10px] text-slate-400">Real-time service monitoring</p>
           </div>
         ) : (
           <div className="w-full max-w-xs">
@@ -47,12 +43,8 @@ export default function Navbar() {
 
         <div className="flex items-center gap-4">
           <div className="text-right">
-            <p className="text-sm font-medium text-slate-900">
-              {user?.name || "User"}
-            </p>
-            <p className="text-xs text-slate-500">
-              {user?.role || "Development mode"}
-            </p>
+            <p className="text-sm font-medium text-slate-900">{user?.name || "User"}</p>
+            <p className="text-xs text-slate-500">{user?.role || "Development mode"}</p>
           </div>
 
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
@@ -74,5 +66,5 @@ export default function Navbar() {
         </div>
       </div>
     </header>
-  )
+  );
 }

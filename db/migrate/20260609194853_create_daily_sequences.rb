@@ -9,7 +9,7 @@ class CreateDailySequences < ActiveRecord::Migration[8.1]
     end
 
     add_index :daily_sequences,
-              [:queue_service_id, :sequence_date],
+              [ :queue_service_id, :sequence_date ],
               unique: true
   end
 end

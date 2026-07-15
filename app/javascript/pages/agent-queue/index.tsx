@@ -1,80 +1,80 @@
-import { router, useForm, usePage } from "@inertiajs/react"
-import type { FormEvent } from "react"
-import { useEffect, useMemo, useState } from "react"
+import { router, useForm, usePage } from "@inertiajs/react";
+import type { FormEvent } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import AppLayout from "../../layouts/AppLayout"
-import type { FlashData } from "../../types"
+import AppLayout from "../../layouts/AppLayout";
+import type { FlashData } from "../../types";
 
 type QueueServiceRecord = {
-  id: number
-  name: string
-  code: string
-}
+  id: number;
+  name: string;
+  code: string;
+};
 
 type ServiceWindowRecord = {
-  id: number
-  name: string
-  code: string
-  queue_service: QueueServiceRecord
-}
+  id: number;
+  name: string;
+  code: string;
+  queue_service: QueueServiceRecord;
+};
 
 type PendingTicketRecord = {
-  id: number
-  ticket_number: string
-  priority: string
-  assistance_type: string | null
-  intake_source: string
-  created_at: string
-}
+  id: number;
+  ticket_number: string;
+  priority: string;
+  assistance_type: string | null;
+  intake_source: string;
+  created_at: string;
+};
 
 type ActiveTicketRecord = {
-  id: number
-  ticket_number: string
-  priority: string
-  assistance_type: string | null
-  intake_source: string
+  id: number;
+  ticket_number: string;
+  priority: string;
+  assistance_type: string | null;
+  intake_source: string;
   assigned_agent: {
-    id: number
-    name: string
-  }
+    id: number;
+    name: string;
+  };
   service_window: {
-    id: number
-    name: string
-    code: string
-  }
-  queue_service: QueueServiceRecord
-  called_at?: string | null
-  started_at?: string | null
-}
+    id: number;
+    name: string;
+    code: string;
+  };
+  queue_service: QueueServiceRecord;
+  called_at?: string | null;
+  started_at?: string | null;
+};
 
 type AgentActiveTicketRecord = {
-  id: number
-  ticket_number: string
-  status: "called" | "in_attention"
+  id: number;
+  ticket_number: string;
+  status: "called" | "in_attention";
   service_window: {
-    id: number
-    name: string
-    code: string
-  }
-}
+    id: number;
+    name: string;
+    code: string;
+  };
+};
 
 type AgentQueueProps = {
-  service_windows: ServiceWindowRecord[]
-  selected_service_window: ServiceWindowRecord | null
-  pending_tickets: PendingTicketRecord[]
-  current_called_ticket: ActiveTicketRecord | null
-  current_in_attention_ticket: ActiveTicketRecord | null
-  agent_active_ticket: AgentActiveTicketRecord | null
-  selected_service_window_busy: boolean
-}
+  service_windows: ServiceWindowRecord[];
+  selected_service_window: ServiceWindowRecord | null;
+  pending_tickets: PendingTicketRecord[];
+  current_called_ticket: ActiveTicketRecord | null;
+  current_in_attention_ticket: ActiveTicketRecord | null;
+  agent_active_ticket: AgentActiveTicketRecord | null;
+  selected_service_window_busy: boolean;
+};
 
 type CallNextFormData = {
-  service_window_id: string
-}
+  service_window_id: string;
+};
 
 type SharedPageProps = {
-  flash?: FlashData
-}
+  flash?: FlashData;
+};
 
 const priorityLabels: Record<string, string> = {
   emergency: "Emergency",
@@ -83,46 +83,46 @@ const priorityLabels: Record<string, string> = {
   pregnancy: "Pregnancy",
   appointment: "Scheduled appointment",
   normal: "Normal",
-}
+};
 
 const assistanceLabels: Record<string, string> = {
   disability: "Disability",
   senior: "Senior adult",
   pregnancy: "Pregnancy",
   appointment: "Scheduled appointment",
-}
+};
 
-const NO_SHOW_WAIT_SECONDS = 15
+const NO_SHOW_WAIT_SECONDS = 15;
 
 function formatTime(dateTime: string | null | undefined) {
-  if (!dateTime) return "Not available"
+  if (!dateTime) return "Not available";
 
   return new Date(dateTime).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
-  })
+  });
 }
 
 function formatIntakeSource(intakeSource: string) {
-  return intakeSource === "self_service" ? "Self-service" : "Assisted"
+  return intakeSource === "self_service" ? "Self-service" : "Assisted";
 }
 
 function getStatusLabel(status: "called" | "in_attention" | null) {
-  if (status === "called") return "Called"
-  if (status === "in_attention") return "In attention"
-  return "No active ticket"
+  if (status === "called") return "Called";
+  if (status === "in_attention") return "In attention";
+  return "No active ticket";
 }
 
 function getNoShowRemainingSeconds(calledAt: string | null | undefined) {
-  if (!calledAt) return NO_SHOW_WAIT_SECONDS
+  if (!calledAt) return NO_SHOW_WAIT_SECONDS;
 
-  const calledAtTime = new Date(calledAt).getTime()
+  const calledAtTime = new Date(calledAt).getTime();
 
-  if (Number.isNaN(calledAtTime)) return NO_SHOW_WAIT_SECONDS
+  if (Number.isNaN(calledAtTime)) return NO_SHOW_WAIT_SECONDS;
 
-  const elapsedSeconds = Math.floor((Date.now() - calledAtTime) / 1000)
+  const elapsedSeconds = Math.floor((Date.now() - calledAtTime) / 1000);
 
-  return Math.max(NO_SHOW_WAIT_SECONDS - elapsedSeconds, 0)
+  return Math.max(NO_SHOW_WAIT_SECONDS - elapsedSeconds, 0);
 }
 
 export default function AgentQueue({
@@ -134,67 +134,65 @@ export default function AgentQueue({
   agent_active_ticket: agentActiveTicket,
   selected_service_window_busy: selectedServiceWindowBusy,
 }: AgentQueueProps) {
-  const { props } = usePage<SharedPageProps>()
-  const flash = props.flash
-  const [showNotice, setShowNotice] = useState(Boolean(flash?.notice))
+  const { props } = usePage<SharedPageProps>();
+  const flash = props.flash;
+  const [showNotice, setShowNotice] = useState(Boolean(flash?.notice));
 
   useEffect(() => {
     if (!flash?.notice) {
-      setShowNotice(false)
-      return
+      setShowNotice(false);
+      return;
     }
 
-    setShowNotice(true)
+    setShowNotice(true);
 
     const timeoutId = window.setTimeout(() => {
-      setShowNotice(false)
-    }, 10_000)
+      setShowNotice(false);
+    }, 10_000);
 
-    return () => window.clearTimeout(timeoutId)
-  }, [flash?.notice])
+    return () => window.clearTimeout(timeoutId);
+  }, [flash?.notice]);
 
   const callNextForm = useForm<CallNextFormData>({
     service_window_id: selectedServiceWindow?.id.toString() ?? "",
-  })
+  });
 
-  const startAttentionForm = useForm({})
-  const finishAttentionForm = useForm({})
-  const markNoShowForm = useForm({})
+  const startAttentionForm = useForm({});
+  const finishAttentionForm = useForm({});
+  const markNoShowForm = useForm({});
 
   const activeTicketStatus = useMemo<"called" | "in_attention" | null>(() => {
-    if (currentInAttentionTicket) return "in_attention"
-    if (currentCalledTicket) return "called"
-    return null
-  }, [currentCalledTicket, currentInAttentionTicket])
+    if (currentInAttentionTicket) return "in_attention";
+    if (currentCalledTicket) return "called";
+    return null;
+  }, [currentCalledTicket, currentInAttentionTicket]);
 
-  const activeTicket = currentInAttentionTicket ?? currentCalledTicket
-  const agentHasActiveTicket = agentActiveTicket !== null
-  const [noShowRemainingSeconds, setNoShowRemainingSeconds] = useState(0)
+  const activeTicket = currentInAttentionTicket ?? currentCalledTicket;
+  const agentHasActiveTicket = agentActiveTicket !== null;
+  const [noShowRemainingSeconds, setNoShowRemainingSeconds] = useState(0);
 
   useEffect(() => {
     if (!currentCalledTicket?.called_at) {
-      setNoShowRemainingSeconds(0)
-      return
+      setNoShowRemainingSeconds(0);
+      return;
     }
 
     const updateRemainingSeconds = () => {
-      setNoShowRemainingSeconds(
-        getNoShowRemainingSeconds(currentCalledTicket.called_at),
-      )
-    }
+      setNoShowRemainingSeconds(getNoShowRemainingSeconds(currentCalledTicket.called_at));
+    };
 
-    updateRemainingSeconds()
+    updateRemainingSeconds();
 
-    const intervalId = window.setInterval(updateRemainingSeconds, 1_000)
+    const intervalId = window.setInterval(updateRemainingSeconds, 1_000);
 
-    return () => window.clearInterval(intervalId)
-  }, [currentCalledTicket?.called_at])
+    return () => window.clearInterval(intervalId);
+  }, [currentCalledTicket?.called_at]);
 
   const handleServiceWindowChange = (serviceWindowId: string) => {
-    callNextForm.setData("service_window_id", serviceWindowId)
+    callNextForm.setData("service_window_id", serviceWindowId);
 
     if (serviceWindowId === "") {
-      return
+      return;
     }
 
     router.get(
@@ -205,77 +203,66 @@ export default function AgentQueue({
         preserveState: false,
         replace: true,
       },
-    )
-  }
+    );
+  };
 
   const submitCallNext = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+    event.preventDefault();
 
-    if (!selectedServiceWindow) return
+    if (!selectedServiceWindow) return;
 
     callNextForm.transform((formData) => ({
       service_window_id: formData.service_window_id,
-    }))
+    }));
 
     callNextForm.post("/agent-queue/call-next", {
       preserveScroll: true,
-    })
-  }
+    });
+  };
 
   const handleStartAttention = () => {
-    if (!currentCalledTicket) return
+    if (!currentCalledTicket) return;
 
-    startAttentionForm.patch(
-      `/agent-queue/tickets/${currentCalledTicket.id}/start`,
-      {
-        preserveScroll: true,
-      },
-    )
-  }
+    startAttentionForm.patch(`/agent-queue/tickets/${currentCalledTicket.id}/start`, {
+      preserveScroll: true,
+    });
+  };
 
   const handleMarkNoShow = () => {
-    if (!currentCalledTicket || !canMarkNoShow) return
+    if (!currentCalledTicket || !canMarkNoShow) return;
 
-    markNoShowForm.patch(
-      `/agent-queue/tickets/${currentCalledTicket.id}/no-show`,
-      {
-        preserveScroll: true,
-      },
-    )
-  }
+    markNoShowForm.patch(`/agent-queue/tickets/${currentCalledTicket.id}/no-show`, {
+      preserveScroll: true,
+    });
+  };
 
   const handleFinishAttention = () => {
-    if (!currentInAttentionTicket) return
+    if (!currentInAttentionTicket) return;
 
-    finishAttentionForm.patch(
-      `/agent-queue/tickets/${currentInAttentionTicket.id}/finish`,
-      {
-        preserveScroll: true,
-      },
-    )
-  }
+    finishAttentionForm.patch(`/agent-queue/tickets/${currentInAttentionTicket.id}/finish`, {
+      preserveScroll: true,
+    });
+  };
 
   const canMarkNoShow =
     activeTicketStatus === "called" &&
     noShowRemainingSeconds === 0 &&
     !startAttentionForm.processing &&
-    !markNoShowForm.processing
+    !markNoShowForm.processing;
 
   const canCallNext =
     selectedServiceWindow !== null &&
     pendingTickets.length > 0 &&
     !agentHasActiveTicket &&
     !selectedServiceWindowBusy &&
-    !callNextForm.processing
+    !callNextForm.processing;
 
   return (
     <AppLayout>
       <section className="space-y-6">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-950">
-              Agent Queue
-            </h1>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-950">Agent Queue</h1>
 
             <p className="mt-2 text-sm text-slate-600">
               Manage the tickets assigned to your service window in real time.
@@ -315,15 +302,11 @@ export default function AgentQueue({
           <div className="grid gap-5 xl:grid-cols-[minmax(0,340px)_1fr]">
             <div>
               <label className="block">
-                <span className="text-sm font-semibold text-slate-700">
-                  Service window
-                </span>
+                <span className="text-sm font-semibold text-slate-700">Service window</span>
 
                 <select
                   value={selectedServiceWindow?.id.toString() ?? ""}
-                  onChange={(event) =>
-                    handleServiceWindowChange(event.target.value)
-                  }
+                  onChange={(event) => handleServiceWindowChange(event.target.value)}
                   className="mt-2 w-full rounded-xl border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 >
                   {serviceWindows.length === 0 && (
@@ -391,9 +374,7 @@ export default function AgentQueue({
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between border-b border-slate-200 pb-4">
             <div>
-              <h2 className="text-lg font-bold text-slate-950">
-                Current Attention
-              </h2>
+              <h2 className="text-lg font-bold text-slate-950">Current Attention</h2>
 
               <p className="mt-1 text-sm text-slate-500">
                 Active lifecycle for the selected service window.
@@ -416,9 +397,7 @@ export default function AgentQueue({
           {activeTicket ? (
             <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_260px]">
               <div>
-                <p className="text-sm font-medium text-slate-500">
-                  Ticket number
-                </p>
+                <p className="text-sm font-medium text-slate-500">Ticket number</p>
 
                 <p className="mt-2 text-5xl font-bold tracking-tight text-slate-950">
                   {activeTicket.ticket_number}
@@ -439,8 +418,7 @@ export default function AgentQueue({
                       Window
                     </p>
                     <p className="mt-2 text-sm font-semibold text-slate-800">
-                      {activeTicket.service_window.name} (
-                      {activeTicket.service_window.code})
+                      {activeTicket.service_window.name} ({activeTicket.service_window.code})
                     </p>
                   </div>
 
@@ -449,8 +427,7 @@ export default function AgentQueue({
                       Priority
                     </p>
                     <p className="mt-2 text-sm font-semibold text-slate-800">
-                      {priorityLabels[activeTicket.priority] ??
-                        activeTicket.priority}
+                      {priorityLabels[activeTicket.priority] ?? activeTicket.priority}
                     </p>
                   </div>
 
@@ -471,8 +448,8 @@ export default function AgentQueue({
                     </p>
                     <p className="mt-2 text-sm font-semibold text-slate-800">
                       {activeTicket.assistance_type
-                        ? assistanceLabels[activeTicket.assistance_type] ??
-                          activeTicket.assistance_type
+                        ? (assistanceLabels[activeTicket.assistance_type] ??
+                          activeTicket.assistance_type)
                         : "None"}
                     </p>
                   </div>
@@ -501,9 +478,7 @@ export default function AgentQueue({
 
               <div className="flex flex-col justify-between rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5">
                 <div>
-                  <p className="text-sm font-semibold text-slate-700">
-                    Next action
-                  </p>
+                  <p className="text-sm font-semibold text-slate-700">Next action</p>
 
                   <p className="mt-2 text-sm text-slate-500">
                     Continue the normal attention lifecycle for this ticket.
@@ -516,15 +491,10 @@ export default function AgentQueue({
                       <button
                         type="button"
                         onClick={handleStartAttention}
-                        disabled={
-                          startAttentionForm.processing ||
-                          markNoShowForm.processing
-                        }
+                        disabled={startAttentionForm.processing || markNoShowForm.processing}
                         className="w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        {startAttentionForm.processing
-                          ? "Starting..."
-                          : "Start attention"}
+                        {startAttentionForm.processing ? "Starting..." : "Start attention"}
                       </button>
 
                       {noShowRemainingSeconds > 0 && (
@@ -539,9 +509,7 @@ export default function AgentQueue({
                         disabled={!canMarkNoShow}
                         className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        {markNoShowForm.processing
-                          ? "Marking..."
-                          : "Mark no-show"}
+                        {markNoShowForm.processing ? "Marking..." : "Mark no-show"}
                       </button>
                     </div>
                   )}
@@ -553,9 +521,7 @@ export default function AgentQueue({
                       disabled={finishAttentionForm.processing}
                       className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      {finishAttentionForm.processing
-                        ? "Finishing..."
-                        : "Finish attention"}
+                      {finishAttentionForm.processing ? "Finishing..." : "Finish attention"}
                     </button>
                   )}
                 </div>
@@ -579,8 +545,7 @@ export default function AgentQueue({
               <h2 className="text-lg font-bold text-slate-950">Waiting Queue</h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                Tickets waiting for this service, ordered by priority and arrival
-                time.
+                Tickets waiting for this service, ordered by priority and arrival time.
               </p>
             </div>
 
@@ -653,5 +618,5 @@ export default function AgentQueue({
         </div>
       </section>
     </AppLayout>
-  )
+  );
 }

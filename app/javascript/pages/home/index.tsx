@@ -1,4 +1,4 @@
-import AppLayout from "../../layouts/AppLayout"
+import AppLayout from "../../layouts/AppLayout";
 
 export default function Home() {
   return (
@@ -13,10 +13,9 @@ export default function Home() {
         </h1>
 
         <p className="mt-6 max-w-2xl text-lg text-slate-300">
-          A Rails monolith built with Inertia, React, TypeScript,
-          TailwindCSS and PostgreSQL.
+          A Rails monolith built with Inertia, React, TypeScript, TailwindCSS and PostgreSQL.
         </p>
       </section>
     </AppLayout>
-  )
+  );
 }

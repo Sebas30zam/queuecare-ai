@@ -1,35 +1,35 @@
-import { FormEvent } from "react"
-import { useForm } from "@inertiajs/react"
+import { FormEvent } from "react";
+import { useForm } from "@inertiajs/react";
 
-import GuestLayout from "../../layouts/GuestLayout"
+import GuestLayout from "../../layouts/GuestLayout";
 
 type LoginForm = {
-  email: string
-  password: string
-}
+  email: string;
+  password: string;
+};
 
 type LoginProps = {
   errors?: {
-    email?: string
-  }
-}
+    email?: string;
+  };
+};
 
 const demoCredentials = [
   { role: "Admin", email: "admin@queuecare.com" },
   { role: "Reception", email: "receptionist@queuecare.com" },
   { role: "Agent", email: "agent@queuecare.com" },
   { role: "Supervisor", email: "supervisor@queuecare.com" },
-]
+];
 
 export default function Login({ errors }: LoginProps) {
   const { data, setData, post, processing } = useForm<LoginForm>({
     email: "",
     password: "",
-  })
+  });
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    post("/login")
+    event.preventDefault();
+    post("/login");
   }
 
   return (
@@ -40,13 +40,9 @@ export default function Login({ errors }: LoginProps) {
             Q
           </div>
 
-          <h1 className="text-3xl font-bold text-blue-500">
-            QueueCare AI
-          </h1>
+          <h1 className="text-3xl font-bold text-blue-500">QueueCare AI</h1>
 
-          <h2 className="mt-4 text-xl font-bold text-slate-950">
-            Intelligent queue management
-          </h2>
+          <h2 className="mt-4 text-xl font-bold text-slate-950">Intelligent queue management</h2>
 
           <p className="mt-2 text-sm text-slate-500">
             Operational attention and analytics for universities.
@@ -60,9 +56,7 @@ export default function Login({ errors }: LoginProps) {
           <div className="border-b border-slate-100 px-6 py-6">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className="text-xl font-bold text-slate-950">
-                  Sign in
-                </h3>
+                <h3 className="text-xl font-bold text-slate-950">Sign in</h3>
 
                 <p className="mt-1 text-xs text-slate-500">
                   Enter your institutional credentials to access the panel.
@@ -81,9 +75,7 @@ export default function Login({ errors }: LoginProps) {
             )}
 
             <div className="mt-5">
-              <label className="text-xs font-semibold text-slate-700">
-                Email
-              </label>
+              <label className="text-xs font-semibold text-slate-700">Email</label>
 
               <input
                 type="email"
@@ -96,13 +88,9 @@ export default function Login({ errors }: LoginProps) {
 
             <div className="mt-4">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-700">
-                  Password
-                </label>
+                <label className="text-xs font-semibold text-slate-700">Password</label>
 
-                <span className="text-xs font-medium text-blue-500">
-                  Forgot your password?
-                </span>
+                <span className="text-xs font-medium text-blue-500">Forgot your password?</span>
               </div>
 
               <input
@@ -139,9 +127,7 @@ export default function Login({ errors }: LoginProps) {
                 key={credential.email}
                 className="flex items-center justify-between gap-3 text-xs"
               >
-                <span className="font-semibold text-slate-600">
-                  {credential.role}:
-                </span>
+                <span className="font-semibold text-slate-600">{credential.role}:</span>
 
                 <span className="rounded bg-slate-50 px-2 py-1 text-slate-500">
                   {credential.email}
@@ -160,5 +146,5 @@ export default function Login({ errors }: LoginProps) {
         </footer>
       </div>
     </GuestLayout>
-  )
+  );
 }
