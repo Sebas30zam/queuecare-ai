@@ -46,7 +46,7 @@ class SatisfactionSurveysController < ApplicationController
     ticket = find_ticket
 
     return unless ticket
-    return unless ticket.status == "attended"
+    return unless ticket.status == Ticket::ATTENDED_STATUS
     return if ticket.finished_at.blank?
     return if ticket.satisfaction_survey.present?
 

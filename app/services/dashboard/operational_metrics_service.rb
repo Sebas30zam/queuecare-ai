@@ -3,13 +3,20 @@ module Dashboard
     ROUNDING_PRECISION = 2
     SECONDS_PER_MINUTE = 60.0
 
-    STATUS_ORDER = %w[
-      pending
-      called
-      in_attention
-      attended
-      no_show
-      cancelled
+    PENDING_STATUS = "pending".freeze
+    CALLED_STATUS = "called".freeze
+    IN_ATTENTION_STATUS = "in_attention".freeze
+    ATTENDED_STATUS = "attended".freeze
+    NO_SHOW_STATUS = "no_show".freeze
+    CANCELLED_STATUS = "cancelled".freeze
+
+    STATUS_ORDER = [
+      PENDING_STATUS,
+      CALLED_STATUS,
+      IN_ATTENTION_STATUS,
+      ATTENDED_STATUS,
+      NO_SHOW_STATUS,
+      CANCELLED_STATUS
     ].freeze
 
     def initialize(date: Date.current)
@@ -217,10 +224,10 @@ module Dashboard
 
       {
         tickets_created: tickets.size,
-        tickets_attended: count_status(tickets, "attended"),
-        tickets_pending: count_status(tickets, "pending"),
-        tickets_no_show: count_status(tickets, "no_show"),
-        tickets_cancelled: count_status(tickets, "cancelled"),
+        tickets_attended: count_status(tickets, ATTENDED_STATUS),
+        tickets_pending: count_status(tickets, PENDING_STATUS),
+        tickets_no_show: count_status(tickets, NO_SHOW_STATUS),
+        tickets_cancelled: count_status(tickets, CANCELLED_STATUS),
         average_wait_time_minutes: average_wait_time(tickets),
         average_attention_time_minutes: average_attention_time(tickets),
         average_satisfaction_rating: average_rating(submitted_surveys),

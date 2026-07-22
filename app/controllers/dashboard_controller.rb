@@ -7,7 +7,14 @@ class DashboardController < ApplicationController
       date: Date.current
     ).call
 
-    render inertia: "dashboard/index", props: {
+    render inertia: "dashboard/index",
+           props: build_dashboard_index_props(metrics)
+  end
+
+  private
+
+  def build_dashboard_index_props(metrics)
+    {
       date: metrics[:date],
       summary: metrics[:summary],
       services: metrics[:services],

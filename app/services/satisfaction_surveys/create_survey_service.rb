@@ -13,24 +13,14 @@ module SatisfactionSurveys
     end
 
     def call
-      unless ticket&.persisted?
-        return failure("Ticket is required")
-      end
+      return failure("Ticket is required") unless ticket&.persisted?
 
       survey = nil
 
       ticket.with_lock do
-        unless ticket.status == "attended"
-          return failure("Ticket must be attended before submitting a survey")
-        end
-
-        if ticket.finished_at.blank?
-          return failure("Finished at is required")
-        end
-
-        if SatisfactionSurvey.exists?(ticket_id: ticket.id)
-          return failure("Ticket already has a satisfaction survey")
-        end
+        return failure("Ticket must be attended before submitting a survey") unless ticket.status == Ticket::ATTENDED_STATUS
+        return failure("Finished at is required") if ticket.finished_at.blank?
+        return failure("Ticket already has a satisfaction survey") if SatisfactionSurvey.exists?(ticket_id: ticket.id)
 
         survey = SatisfactionSurvey.create!(
           ticket: ticket,

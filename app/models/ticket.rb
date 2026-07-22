@@ -1,4 +1,11 @@
 class Ticket < ApplicationRecord
+  ATTENDED_STATUS = "attended".freeze
+
+  PUBLIC_SCREEN_ACTIVE_STATUSES = %w[
+    called
+    in_attention
+  ].freeze
+
   STATUSES = %w[
     pending
     called
@@ -28,6 +35,25 @@ class Ticket < ApplicationRecord
     pregnancy
     appointment
   ].freeze
+
+  scope :with_public_screen_associations, lambda {
+    includes(
+      :queue_service,
+      :service_window,
+      :assigned_agent
+    )
+  }
+
+  scope :recently_called_for_public_screen, lambda {
+    with_public_screen_associations
+      .where.not(called_at: nil)
+      .order(called_at: :desc, id: :desc)
+  }
+
+  scope :active_for_public_screen, lambda {
+    recently_called_for_public_screen
+      .where(status: PUBLIC_SCREEN_ACTIVE_STATUSES)
+  }
 
   belongs_to :queue_service
   belongs_to :service_window, optional: true
