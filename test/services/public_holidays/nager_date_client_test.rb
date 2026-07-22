@@ -13,7 +13,7 @@ module PublicHolidays
       @request_url = "https://date.nager.at/api/v4/Holidays/CR/2026"
     end
 
-    test "fetches and normalizes public holidays" do
+    test "fetches and normalizes API v4 public holidays" do
       stub_request(:get, @request_url).to_return(
         status: 200,
         headers: { "Content-Type" => "application/json" },
@@ -22,9 +22,9 @@ module PublicHolidays
             "date" => "2026-01-01",
             "name" => "New Year's Day",
             "countryCode" => "CR",
-            "global" => true,
-            "counties" => nil,
-            "types" => [ "Public" ]
+            "nationalHoliday" => true,
+            "subdivisionCodes" => nil,
+            "holidayTypes" => [ "Public" ]
           }
         ].to_json
       )
@@ -49,7 +49,7 @@ module PublicHolidays
         body: [
           valid_holiday.merge(
             "countryCode" => "US",
-            "counties" => [ "US-CA" ]
+            "subdivisionCodes" => [ "US-CA" ]
           )
         ].to_json
       )
@@ -136,14 +136,14 @@ module PublicHolidays
     test "rejects invalid holiday field types" do
       stub_request(:get, @request_url).to_return(
         status: 200,
-        body: [ valid_holiday.merge("global" => "true") ].to_json
+        body: [ valid_holiday.merge("nationalHoliday" => "true") ].to_json
       )
 
       error = assert_raises(NagerDateClient::InvalidResponseError) do
         @client.fetch(year: 2026)
       end
 
-      assert_equal "global at index 0 must be a boolean", error.message
+      assert_equal "nationalHoliday at index 0 must be a boolean", error.message
     end
 
     test "wraps connection timeouts" do
@@ -163,9 +163,9 @@ module PublicHolidays
         "date" => "2026-01-01",
         "name" => "New Year's Day",
         "countryCode" => "CR",
-        "global" => true,
-        "counties" => nil,
-        "types" => [ "Public" ]
+        "nationalHoliday" => true,
+        "subdivisionCodes" => nil,
+        "holidayTypes" => [ "Public" ]
       }
     end
   end

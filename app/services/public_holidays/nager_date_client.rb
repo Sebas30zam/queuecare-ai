@@ -120,18 +120,18 @@ module PublicHolidays
           index: index
         ),
         national_holiday: required_boolean(
-          holiday["global"],
-          field: "global",
+          holiday["nationalHoliday"],
+          field: "nationalHoliday",
           index: index
         ),
         subdivision_codes: optional_string_array(
-          holiday["counties"],
-          field: "counties",
+          holiday["subdivisionCodes"],
+          field: "subdivisionCodes",
           index: index
         ),
         holiday_types: required_string_array(
-          holiday["types"],
-          field: "types",
+          holiday["holidayTypes"],
+          field: "holidayTypes",
           index: index
         )
       }
