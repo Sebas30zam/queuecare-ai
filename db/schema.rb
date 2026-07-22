@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_22_063709) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_22_013707) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -22,6 +22,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_22_063709) do
     t.datetime "updated_at", null: false
     t.index ["queue_service_id", "sequence_date"], name: "index_daily_sequences_on_queue_service_id_and_sequence_date", unique: true
     t.index ["queue_service_id"], name: "index_daily_sequences_on_queue_service_id"
+  end
+
+  create_table "public_holidays", force: :cascade do |t|
+    t.string "country_code", null: false
+    t.datetime "created_at", null: false
+    t.date "date", null: false
+    t.jsonb "holiday_types", default: [], null: false
+    t.string "name", null: false
+    t.boolean "national_holiday", default: false, null: false
+    t.jsonb "subdivision_codes"
+    t.datetime "updated_at", null: false
+    t.index ["country_code", "date", "name"], name: "index_public_holidays_on_country_date_and_name", unique: true
+    t.check_constraint "char_length(country_code::text) = 2", name: "public_holidays_country_code_length"
+    t.check_constraint "jsonb_typeof(holiday_types) = 'array'::text", name: "public_holidays_holiday_types_array"
+    t.check_constraint "subdivision_codes IS NULL OR jsonb_typeof(subdivision_codes) = 'array'::text", name: "public_holidays_subdivision_codes_array"
   end
 
   create_table "queue_services", force: :cascade do |t|
