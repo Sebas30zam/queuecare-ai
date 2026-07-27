@@ -1,0 +1,15 @@
+juan_santamaria_day:
+  date: 2026-04-11
+  name: Juan Santamaría Day
+  country_code: CR
+  national_holiday: true
+  subdivision_codes:
+  holiday_types: <%= ["Public"].to_json %>
+
+independence_day:
+  date: 2026-09-15
+  name: Independence Day
+  country_code: CR
+  national_holiday: true
+  subdivision_codes:
+  holiday_types: <%= ["Public"].to_json %>
