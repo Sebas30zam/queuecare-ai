@@ -1,0 +1,157 @@
+require "test_helper"
+
+class Analytics::HistoricalMetricsCalculatorTest < ActiveSupport::TestCase
+  test "calculates the historical operational metrics" do
+    tickets = [
+      build_ticket(
+        status: "attended",
+        created_at: time_at(1, 8),
+        called_at: time_at(1, 8, 10),
+        started_at: time_at(1, 8, 12),
+        finished_at: time_at(1, 8, 32),
+        survey_rating: 5
+      ),
+      build_ticket(
+        status: "no_show",
+        created_at: time_at(2, 8),
+        called_at: time_at(2, 8, 20)
+      ),
+      build_ticket(
+        status: "cancelled",
+        created_at: time_at(2, 12)
+      ),
+      build_ticket(
+        status: "pending",
+        created_at: time_at(3, 9)
+      ),
+      build_ticket(
+        status: "attended",
+        created_at: time_at(3, 10),
+        called_at: time_at(3, 10, 30),
+        started_at: time_at(3, 10, 35),
+        finished_at: time_at(3, 11, 15),
+        survey_rating: 3
+      )
+    ]
+
+    result = calculator(tickets:, period_days: 4).call
+
+    assert_equal 4, result[:period_days]
+    assert_equal 5, result[:tickets_created]
+    assert_equal 2, result[:tickets_attended]
+    assert_equal 1, result[:tickets_no_show]
+    assert_equal 1, result[:tickets_cancelled]
+    assert_equal 1.25, result[:average_daily_demand]
+    assert_equal 20.0, result[:average_wait_time_minutes]
+    assert_equal 30.0, result[:average_attention_time_minutes]
+    assert_equal 20.0, result[:no_show_rate_percentage]
+    assert_equal 20.0, result[:cancellation_rate_percentage]
+    assert_equal 4.0, result[:average_satisfaction_rating]
+    assert_equal 2, result[:survey_response_count]
+  end
+
+  test "includes zero demand days in the daily average" do
+    tickets = [
+      build_ticket(
+        status: "pending",
+        created_at: time_at(1, 8)
+      ),
+      build_ticket(
+        status: "pending",
+        created_at: time_at(1, 9)
+      )
+    ]
+
+    result = calculator(tickets:, period_days: 4).call
+
+    assert_equal 0.5, result[:average_daily_demand]
+  end
+
+  test "ignores incomplete durations and unsubmitted surveys" do
+    incomplete_ticket = build_ticket(
+      status: "in_attention",
+      created_at: time_at(1, 8),
+      started_at: time_at(1, 8, 15),
+      survey_rating: 2,
+      survey_submitted: false
+    )
+
+    result = calculator(
+      tickets: [ incomplete_ticket ],
+      period_days: 1
+    ).call
+
+    assert_nil result[:average_wait_time_minutes]
+    assert_nil result[:average_attention_time_minutes]
+    assert_nil result[:average_satisfaction_rating]
+    assert_equal 0, result[:survey_response_count]
+  end
+
+  test "returns neutral values when there are no tickets" do
+    result = calculator(tickets: [], period_days: 7).call
+
+    assert_equal 7, result[:period_days]
+    assert_equal 0, result[:tickets_created]
+    assert_equal 0, result[:tickets_attended]
+    assert_equal 0, result[:tickets_no_show]
+    assert_equal 0, result[:tickets_cancelled]
+    assert_equal 0.0, result[:average_daily_demand]
+    assert_equal 0.0, result[:no_show_rate_percentage]
+    assert_equal 0.0, result[:cancellation_rate_percentage]
+    assert_nil result[:average_wait_time_minutes]
+    assert_nil result[:average_attention_time_minutes]
+    assert_nil result[:average_satisfaction_rating]
+    assert_equal 0, result[:survey_response_count]
+  end
+
+  test "rejects a period without positive days" do
+    error = assert_raises(ArgumentError) do
+      calculator(tickets: [], period_days: 0)
+    end
+
+    assert_equal(
+      "period_days must be greater than zero",
+      error.message
+    )
+  end
+
+  private
+
+  def calculator(tickets:, period_days:)
+    Analytics::HistoricalMetricsCalculator.new(
+      tickets:,
+      period_days:
+    )
+  end
+
+  def build_ticket(
+    status:,
+    created_at:,
+    called_at: nil,
+    started_at: nil,
+    finished_at: nil,
+    survey_rating: nil,
+    survey_submitted: true
+  )
+    ticket = Ticket.new(
+      status:,
+      created_at:,
+      called_at:,
+      started_at:,
+      finished_at:
+    )
+
+    if survey_rating
+      ticket.build_satisfaction_survey(
+        rating: survey_rating,
+        submitted_at: survey_submitted ? created_at : nil
+      )
+    end
+
+    ticket
+  end
+
+  def time_at(day, hour, minute = 0)
+    Time.zone.local(2026, 6, day, hour, minute, 0)
+  end
+end
