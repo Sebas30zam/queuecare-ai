@@ -104,9 +104,23 @@ export type PriorityOperationalRecommendation =
 export type OperationalRecommendation =
   DetailedOperationalRecommendation | PriorityOperationalRecommendation;
 
+export type NextHolidayAlert = {
+  date: string;
+  names: string[];
+  days_away: number;
+  recommended_staffing_date: string;
+  historical_data_available: boolean;
+  demand_change_percentage: number | null;
+  historical_sample: {
+    post_holiday_days: number;
+    baseline_days: number;
+  };
+};
+
 export type OperationalRecommendations = {
   status: OperationalRecommendationsStatus;
   recommendations: OperationalRecommendation[];
+  next_holiday_alert: NextHolidayAlert | null;
 };
 
 export type DashboardIndexProps = {

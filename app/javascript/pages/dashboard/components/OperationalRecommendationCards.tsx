@@ -1,8 +1,8 @@
 import type {
   DetailedOperationalRecommendation,
+  NextHolidayAlert,
   OperationalRecommendation,
   OperationalRecommendations,
-  PriorityOperationalRecommendation,
 } from "../types";
 
 type OperationalRecommendationCardsProps = {
@@ -15,30 +15,40 @@ function isDetailedRecommendation(
   return "title" in recommendation;
 }
 
-function isHolidayRecommendation(
-  recommendation: OperationalRecommendation,
-): recommendation is PriorityOperationalRecommendation {
-  return (
-    "priority" in recommendation &&
-    (recommendation.code === "holiday_operational_review" ||
-      recommendation.code === "adjacent_holiday_operational_review")
-  );
+function formatHolidayDate(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(year, month - 1, day));
 }
 
-function holidayMessage(recommendation: PriorityOperationalRecommendation) {
-  if (recommendation.code === "holiday_operational_review") {
-    return {
-      title: "Holiday operational review",
-      description:
-        "Today is a public holiday. Review staffing and expected demand before beginning operations.",
-    };
+function daysUntilHoliday(daysAway: number) {
+  if (daysAway === 1) {
+    return "The next public holiday is tomorrow.";
   }
 
-  return {
-    title: "Adjacent holiday operational review",
-    description:
-      "The selected date is adjacent to a public holiday. Demand may differ from the usual historical pattern.",
-  };
+  return `The next public holiday is in ${daysAway} days.`;
+}
+
+function historicalDemandMessage(alert: NextHolidayAlert) {
+  const demandChange = alert.demand_change_percentage;
+
+  if (!alert.historical_data_available || demandChange === null) {
+    return "There is not enough post-holiday history yet to estimate a reliable demand change.";
+  }
+
+  if (demandChange === 0) {
+    return "Historical data indicates that demand on the next business day usually remains stable.";
+  }
+
+  const direction = demandChange > 0 ? "increase" : "decrease";
+
+  return `Historical data indicates that demand on the next business day may ${direction} by ${Math.abs(
+    demandChange,
+  )}%.`;
 }
 
 export default function OperationalRecommendationCards({
@@ -47,15 +57,12 @@ export default function OperationalRecommendationCards({
   const primaryRecommendation =
     operationalRecommendations.recommendations.find(isDetailedRecommendation);
 
-  const holidayRecommendation =
-    operationalRecommendations.recommendations.find(isHolidayRecommendation);
-
-  const holidayContent = holidayRecommendation ? holidayMessage(holidayRecommendation) : null;
+  const nextHolidayAlert = operationalRecommendations.next_holiday_alert;
 
   const hasInsufficientData = operationalRecommendations.status === "insufficient_data";
 
   return (
-    <div className={`grid gap-3 ${holidayContent ? "lg:grid-cols-2" : ""}`}>
+    <div className={`grid gap-3 ${nextHolidayAlert ? "lg:grid-cols-2" : ""}`}>
       <article className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
         <p className="text-[10px] font-semibold uppercase tracking-wide text-blue-600">
           Primary recommendation
@@ -84,16 +91,27 @@ export default function OperationalRecommendationCards({
         )}
       </article>
 
-      {holidayContent && (
-        <article className="rounded-xl border border-amber-100 bg-amber-50 px-4 py-3">
+      {nextHolidayAlert && (
+        <article className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
           <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-700">
             Holiday alert
           </p>
 
-          <p className="mt-1 text-xs font-semibold text-slate-900">{holidayContent.title}</p>
+          <p className="mt-1 text-xs font-semibold text-slate-900">
+            {nextHolidayAlert.names.join(" / ")}
+          </p>
 
           <p className="mt-1 text-[10px] leading-relaxed text-slate-600">
-            {holidayContent.description}
+            {formatHolidayDate(nextHolidayAlert.date)}.{" "}
+            {daysUntilHoliday(nextHolidayAlert.days_away)}
+          </p>
+
+          <p className="mt-2 text-[10px] leading-relaxed text-slate-600">
+            {historicalDemandMessage(nextHolidayAlert)}
+          </p>
+
+          <p className="mt-2 text-[10px] font-medium text-amber-800">
+            Review staffing for {formatHolidayDate(nextHolidayAlert.recommended_staffing_date)}.
           </p>
         </article>
       )}

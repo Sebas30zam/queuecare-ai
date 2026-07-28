@@ -178,6 +178,9 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
       inertia_props.fetch("operational_recommendations")
 
     assert operational_recommendations.key?("status")
+assert operational_recommendations.key?(
+  "next_holiday_alert"
+)
     assert_kind_of(
       Array,
       operational_recommendations.fetch("recommendations")
