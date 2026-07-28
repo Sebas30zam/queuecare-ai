@@ -39,7 +39,8 @@ class DashboardController < ApplicationController
       operational_recommendations:
         operational_recommendations.slice(
           :status,
-          :recommendations
+          :recommendations,
+          :next_holiday_alert
         )
     }
   end
