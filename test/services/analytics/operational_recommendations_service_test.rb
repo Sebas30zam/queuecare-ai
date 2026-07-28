@@ -45,6 +45,16 @@ class Analytics::OperationalRecommendationsServiceTest <
     assert_equal [ target_date ], calendar_service.received_dates
   end
 
+  test "initializes its default historical profile service" do
+  target_date = Date.new(2026, 4, 12)
+
+  assert_nothing_raised do
+    Analytics::OperationalRecommendationsService.new(
+      date: target_date
+    )
+  end
+end
+
   private
 
   class CallableStub
