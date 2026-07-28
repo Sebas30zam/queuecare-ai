@@ -5,6 +5,7 @@ module Analytics
     HIGH_NO_SHOW_RATE_THRESHOLD_PERCENTAGE = 10.0
     SATURATED_SERVICE_DEMAND_SHARE_THRESHOLD_PERCENTAGE = 40.0
     PEAK_DEMAND_HOUR_SHARE_THRESHOLD_PERCENTAGE = 20.0
+    UNEVEN_SERVICE_WINDOW_LOAD_SHARE_THRESHOLD_PERCENTAGE = 45.0
 
     def initialize(metrics:, calendar_context:)
       @metrics = metrics
@@ -40,8 +41,49 @@ module Analytics
         items << high_no_show_rate_recommendation if high_no_show_rate?
         items << saturated_service_recommendation if saturated_service
       items << peak_demand_hour_recommendation if peak_demand_hour
+      if uneven_service_window
+        items << uneven_service_window_load_recommendation
+      end
       end
     end
+
+def uneven_service_window_load_recommendation
+  window = uneven_service_window
+
+  {
+    code: "uneven_service_window_load",
+    title: "Uneven historical service window load",
+    description: "#{window[:service_window_name]} concentrates a high " \
+      "share of historically assigned tickets.",
+    severity: "warning",
+    suggested_action: "Review ticket distribution across service windows.",
+    evidence: {
+      metric_name: "service_window_load_share_percentage",
+      observed_value: window[:share_percentage],
+      threshold_value:
+        UNEVEN_SERVICE_WINDOW_LOAD_SHARE_THRESHOLD_PERCENTAGE,
+      service_window_name: window[:service_window_name],
+      service_window_code: window[:service_window_code],
+      queue_service_name: window[:queue_service_name],
+      queue_service_code: window[:queue_service_code],
+      context: "historical_operational_profile"
+    }
+  }
+end
+
+def uneven_service_window
+  Array(metrics[:service_window_distribution])
+    .select do |window|
+      window[:share_percentage].to_f >
+        UNEVEN_SERVICE_WINDOW_LOAD_SHARE_THRESHOLD_PERCENTAGE
+    end
+    .min_by do |window|
+      [
+        -window[:share_percentage].to_f,
+        window[:service_window_code].to_s
+      ]
+    end
+end
 
     def peak_demand_hour_recommendation
       hour = peak_demand_hour
