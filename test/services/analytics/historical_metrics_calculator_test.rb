@@ -109,6 +109,49 @@ class Analytics::HistoricalMetricsCalculatorTest < ActiveSupport::TestCase
     )
   end
 
+  test "calculates ticket distribution by creation hour" do
+    tickets = [
+      build_ticket(
+        status: "pending",
+        created_at: time_at(1, 8)
+      ),
+      build_ticket(
+        status: "pending",
+        created_at: time_at(1, 10)
+      ),
+      build_ticket(
+        status: "pending",
+        created_at: time_at(2, 8)
+      ),
+      build_ticket(
+        status: "pending",
+        created_at: time_at(2, 10, 30)
+      ),
+      build_ticket(
+        status: "pending",
+        created_at: time_at(3, 10)
+      )
+    ]
+
+    result = calculator(tickets:, period_days: 3).call
+
+    assert_equal(
+      [
+        {
+          hour: 8,
+          tickets_created: 2,
+          share_percentage: 40.0
+        },
+        {
+          hour: 10,
+          tickets_created: 3,
+          share_percentage: 60.0
+        }
+      ],
+      result[:hourly_distribution]
+    )
+  end
+
   test "includes zero demand days in the daily average" do
     tickets = [
       build_ticket(
@@ -162,6 +205,7 @@ class Analytics::HistoricalMetricsCalculatorTest < ActiveSupport::TestCase
     assert_nil result[:average_satisfaction_rating]
     assert_equal 0, result[:survey_response_count]
     assert_empty result[:service_distribution]
+    assert_empty result[:hourly_distribution]
   end
 
   test "rejects a period without positive days" do

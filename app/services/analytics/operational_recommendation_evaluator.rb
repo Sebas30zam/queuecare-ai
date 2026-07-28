@@ -4,6 +4,8 @@ module Analytics
     HIGH_ATTENTION_TIME_THRESHOLD_MINUTES = 30.0
     HIGH_NO_SHOW_RATE_THRESHOLD_PERCENTAGE = 10.0
     SATURATED_SERVICE_DEMAND_SHARE_THRESHOLD_PERCENTAGE = 40.0
+    PEAK_DEMAND_HOUR_SHARE_THRESHOLD_PERCENTAGE = 20.0
+
     def initialize(metrics:, calendar_context:)
       @metrics = metrics
       @calendar_context = calendar_context
@@ -37,7 +39,41 @@ module Analytics
 
         items << high_no_show_rate_recommendation if high_no_show_rate?
         items << saturated_service_recommendation if saturated_service
+      items << peak_demand_hour_recommendation if peak_demand_hour
       end
+    end
+
+    def peak_demand_hour_recommendation
+      hour = peak_demand_hour
+
+      {
+        code: "peak_demand_hour",
+        title: "Historical peak demand hour",
+        description: "This hour concentrates a high share of historical demand.",
+        severity: "warning",
+        suggested_action: "Review staffing coverage before and during this hour.",
+        evidence: {
+          metric_name: "hourly_demand_share_percentage",
+          observed_value: hour[:share_percentage],
+          threshold_value: PEAK_DEMAND_HOUR_SHARE_THRESHOLD_PERCENTAGE,
+          hour: hour[:hour],
+          context: "historical_operational_profile"
+        }
+      }
+    end
+
+    def peak_demand_hour
+      Array(metrics[:hourly_distribution])
+        .select do |hour|
+          hour[:share_percentage].to_f >
+            PEAK_DEMAND_HOUR_SHARE_THRESHOLD_PERCENTAGE
+        end
+        .max_by do |hour|
+          [
+            hour[:share_percentage].to_f,
+            -hour[:hour].to_i
+          ]
+        end
     end
 
     def saturated_service_recommendation
