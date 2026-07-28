@@ -40,7 +40,8 @@ module Analytics
           submitted_surveys.map(&:rating)
         ),
         survey_response_count: submitted_surveys.size,
-        service_distribution: service_distribution
+        service_distribution: service_distribution,
+        hourly_distribution: hourly_distribution
       }
     end
 
@@ -78,6 +79,22 @@ module Analytics
           -service[:tickets_created],
           service[:service_code]
         ]
+      end
+    end
+
+    def hourly_distribution
+      hour_counts = tickets.filter_map do |ticket|
+        ticket.created_at&.in_time_zone&.hour
+      end.tally
+
+      total = hour_counts.values.sum
+
+      hour_counts.sort_by(&:first).map do |hour, count|
+        {
+          hour:,
+          tickets_created: count,
+          share_percentage: percentage(count, total)
+        }
       end
     end
 

@@ -390,4 +390,164 @@ class Analytics::OperationalRecommendationEvaluatorTest <
       result[:recommendations].first.dig(:evidence, :observed_value)
     )
   end
+  test "recommends action for the hour with the highest demand share above the threshold" do
+    evaluator = Analytics::OperationalRecommendationEvaluator.new(
+      metrics: {
+        tickets_created: 100,
+        tickets_no_show: 0,
+        average_wait_time_minutes: 20.0,
+        average_attention_time_minutes: 30.0,
+        service_distribution: [],
+        hourly_distribution: [
+          {
+            hour: 8,
+            tickets_created: 25,
+            share_percentage: 25.0
+          },
+          {
+            hour: 10,
+            tickets_created: 35,
+            share_percentage: 35.0
+          },
+          {
+            hour: 11,
+            tickets_created: 20,
+            share_percentage: 20.0
+          },
+          {
+            hour: 14,
+            tickets_created: 20,
+            share_percentage: 20.0
+          }
+        ]
+      },
+      calendar_context: {
+        holiday: false,
+        adjacent_to_holiday: false
+      }
+    )
+
+    result = evaluator.call
+
+    assert_equal "ready", result[:status]
+    assert_equal 1, result[:recommendations].size
+
+    recommendation = result[:recommendations].first
+
+    assert_equal "peak_demand_hour", recommendation[:code]
+    assert_equal "Historical peak demand hour", recommendation[:title]
+    assert_predicate recommendation[:description], :present?
+    assert_equal "warning", recommendation[:severity]
+    assert_predicate recommendation[:suggested_action], :present?
+    assert_equal(
+      {
+        metric_name: "hourly_demand_share_percentage",
+        observed_value: 35.0,
+        threshold_value: 20.0,
+        hour: 10,
+        context: "historical_operational_profile"
+      },
+      recommendation[:evidence]
+    )
+  end
+
+  test "does not recommend action when the highest hourly demand share equals the threshold" do
+    evaluator = Analytics::OperationalRecommendationEvaluator.new(
+      metrics: {
+        tickets_created: 100,
+        tickets_no_show: 0,
+        average_wait_time_minutes: 20.0,
+        average_attention_time_minutes: 30.0,
+        service_distribution: [],
+        hourly_distribution: [
+          {
+            hour: 8,
+            tickets_created: 20,
+            share_percentage: 20.0
+          },
+          {
+            hour: 9,
+            tickets_created: 20,
+            share_percentage: 20.0
+          },
+          {
+            hour: 10,
+            tickets_created: 20,
+            share_percentage: 20.0
+          },
+          {
+            hour: 11,
+            tickets_created: 20,
+            share_percentage: 20.0
+          },
+          {
+            hour: 12,
+            tickets_created: 20,
+            share_percentage: 20.0
+          }
+        ]
+      },
+      calendar_context: {
+        holiday: false,
+        adjacent_to_holiday: false
+      }
+    )
+
+    result = evaluator.call
+
+    assert_equal "ready", result[:status]
+    assert_empty result[:recommendations]
+  end
+
+  test "selects the earliest hour when peak demand shares are tied" do
+    evaluator = Analytics::OperationalRecommendationEvaluator.new(
+      metrics: {
+        tickets_created: 100,
+        tickets_no_show: 0,
+        average_wait_time_minutes: 20.0,
+        average_attention_time_minutes: 30.0,
+        service_distribution: [],
+        hourly_distribution: [
+          {
+            hour: 10,
+            tickets_created: 40,
+            share_percentage: 40.0
+          },
+          {
+            hour: 8,
+            tickets_created: 40,
+            share_percentage: 40.0
+          },
+          {
+            hour: 12,
+            tickets_created: 20,
+            share_percentage: 20.0
+          }
+        ]
+      },
+      calendar_context: {
+        holiday: false,
+        adjacent_to_holiday: false
+      }
+    )
+
+    result = evaluator.call
+
+    assert_equal 1, result[:recommendations].size
+    assert_equal(
+      "peak_demand_hour",
+      result[:recommendations].first[:code]
+    )
+    assert_equal(
+      8,
+      result[:recommendations].first.dig(:evidence, :hour)
+    )
+    assert_equal(
+      40.0,
+      result[:recommendations].first.dig(
+        :evidence,
+        :observed_value
+      )
+    )
+  end
 end
