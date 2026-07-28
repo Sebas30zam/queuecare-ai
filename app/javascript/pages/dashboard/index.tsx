@@ -4,6 +4,8 @@ import ChartCard from "./components/ChartCard";
 import CriticalServicesTable from "./components/CriticalServicesTable";
 import HourlyLineChart from "./components/HourlyLineChart";
 import MetricCard from "./components/MetricCard";
+import OperationalRecommendationCards from "./components/OperationalRecommendationCards";
+
 import StatusDonut from "./components/StatusDonut";
 import TicketsByServiceChart from "./components/TicketsByServiceChart";
 import WindowLoadChart from "./components/WindowLoadChart";
@@ -22,7 +24,7 @@ export default function DashboardIndex({
   status_distribution: statusDistribution,
   service_windows: serviceWindows,
   critical_services: criticalServices,
-  insights,
+  operational_recommendations: operationalRecommendations,
 }: DashboardIndexProps) {
   return (
     <AppLayout>
@@ -131,41 +133,7 @@ export default function DashboardIndex({
           />
         </div>
 
-        <div className="grid gap-3 lg:grid-cols-2">
-          <article className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-blue-600">
-              Highest wait time
-            </p>
-
-            <p className="mt-1 text-xs font-semibold text-slate-900">
-              {insights.highest_wait_service
-                ? `${insights.highest_wait_service.name}: ${formatMinutes(
-                    insights.highest_wait_service.average_wait_time_minutes,
-                  )}`
-                : "No hay datos suficientes"}
-            </p>
-
-            <p className="mt-1 text-[10px] text-slate-500">
-              Service requiring the most operational attention today.
-            </p>
-          </article>
-
-          <article className="rounded-xl border border-amber-100 bg-amber-50 px-4 py-3">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-700">
-              Peak demand hour
-            </p>
-
-            <p className="mt-1 text-xs font-semibold text-slate-900">
-              {insights.peak_hour
-                ? `${insights.peak_hour.label}: ${insights.peak_hour.tickets_created} tickets`
-                : "No hay datos suficientes"}
-            </p>
-
-            <p className="mt-1 text-[10px] text-slate-500">
-              Time slot with the most tickets created today.
-            </p>
-          </article>
-        </div>
+        <OperationalRecommendationCards operationalRecommendations={operationalRecommendations} />
 
         <div className="grid gap-4 xl:grid-cols-2">
           <ChartCard title="Tickets by service" subtitle="Total tickets created today">
