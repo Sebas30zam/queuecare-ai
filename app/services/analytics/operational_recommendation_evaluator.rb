@@ -3,6 +3,7 @@ module Analytics
     HIGH_WAIT_TIME_THRESHOLD_MINUTES = 20.0
     HIGH_ATTENTION_TIME_THRESHOLD_MINUTES = 30.0
     HIGH_NO_SHOW_RATE_THRESHOLD_PERCENTAGE = 10.0
+    SATURATED_SERVICE_DEMAND_SHARE_THRESHOLD_PERCENTAGE = 40.0
     def initialize(metrics:, calendar_context:)
       @metrics = metrics
       @calendar_context = calendar_context
@@ -35,7 +36,37 @@ module Analytics
         end
 
         items << high_no_show_rate_recommendation if high_no_show_rate?
+        items << saturated_service_recommendation if saturated_service
       end
+    end
+
+    def saturated_service_recommendation
+      service = saturated_service
+
+      {
+        code: "saturated_service",
+        title: "Historically saturated service",
+        description: "#{service[:service_name]} concentrates a high share of historical demand.",
+        severity: "warning",
+        suggested_action: "Review staffing and service-window capacity for this service.",
+        evidence: {
+          metric_name: "service_demand_share_percentage",
+          observed_value: service[:share_percentage],
+          threshold_value: SATURATED_SERVICE_DEMAND_SHARE_THRESHOLD_PERCENTAGE,
+          service_name: service[:service_name],
+          service_code: service[:service_code],
+          context: "historical_operational_profile"
+        }
+      }
+    end
+
+    def saturated_service
+      Array(metrics[:service_distribution])
+        .select do |service|
+          service[:share_percentage].to_f >
+            SATURATED_SERVICE_DEMAND_SHARE_THRESHOLD_PERCENTAGE
+        end
+        .max_by { |service| service[:share_percentage].to_f }
     end
 
     def high_attention_time?

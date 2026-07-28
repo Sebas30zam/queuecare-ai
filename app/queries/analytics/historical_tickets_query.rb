@@ -9,7 +9,7 @@ module Analytics
 
     def call
       Ticket
-        .includes(:satisfaction_survey)
+        .includes(:satisfaction_survey, :queue_service)
         .where(created_at: historical_period)
         .order(:created_at, :id)
     end

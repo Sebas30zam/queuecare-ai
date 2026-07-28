@@ -39,7 +39,8 @@ module Analytics
         average_satisfaction_rating: average(
           submitted_surveys.map(&:rating)
         ),
-        survey_response_count: submitted_surveys.size
+        survey_response_count: submitted_surveys.size,
+        service_distribution: service_distribution
       }
     end
 
@@ -55,6 +56,29 @@ module Analytics
 
     def count_status(status)
       tickets.count { |ticket| ticket.status == status }
+    end
+
+    def service_distribution
+      service_counts = tickets.filter_map do |ticket|
+        service = ticket.queue_service
+        [ service.name, service.code ] if service
+      end.tally
+
+      total = service_counts.values.sum
+
+      service_counts.map do |(service_name, service_code), count|
+        {
+          service_name:,
+          service_code:,
+          tickets_created: count,
+          share_percentage: percentage(count, total)
+        }
+      end.sort_by do |service|
+        [
+          -service[:tickets_created],
+          service[:service_code]
+        ]
+      end
     end
 
     def average_daily_demand

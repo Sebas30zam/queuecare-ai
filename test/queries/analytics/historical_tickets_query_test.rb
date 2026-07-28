@@ -67,6 +67,20 @@ class Analytics::HistoricalTicketsQueryTest < ActiveSupport::TestCase
     )
   end
 
+  test "preloads the associations required by historical metrics" do
+    ticket = create_ticket(
+      daily_sequence: 208,
+      created_at: Time.zone.local(2026, 6, 10, 8, 0, 0)
+    )
+
+    returned_ticket = query.call.to_a.find do |historical_ticket|
+      historical_ticket.id == ticket.id
+    end
+
+    assert returned_ticket.association(:satisfaction_survey).loaded?
+    assert returned_ticket.association(:queue_service).loaded?
+  end
+
   test "rejects a historical period without previous dates" do
     error = assert_raises(ArgumentError) do
       described_class.new(
