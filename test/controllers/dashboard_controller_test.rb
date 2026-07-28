@@ -169,6 +169,21 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     assert insights.key?("highest_wait_service")
   end
 
+  test "includes operational recommendations prop" do
+    login_as(users(:admin_user))
+
+    get dashboard_url
+
+    operational_recommendations =
+      inertia_props.fetch("operational_recommendations")
+
+    assert operational_recommendations.key?("status")
+    assert_kind_of(
+      Array,
+      operational_recommendations.fetch("recommendations")
+    )
+  end
+
   private
 
   def login_as(user)

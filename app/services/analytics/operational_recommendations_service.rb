@@ -4,7 +4,7 @@ module Analytics
       date:,
       period_days: 30,
       historical_profile_service: HistoricalOperationalProfileService.new(
-        date:,
+        cutoff_date: date,
         period_days:
       ),
       calendar_context_service: CalendarContextService.new

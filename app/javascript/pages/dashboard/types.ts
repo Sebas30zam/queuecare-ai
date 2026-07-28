@@ -58,6 +58,57 @@ export type ServiceWindowMetrics = {
   };
 };
 
+export type OperationalRecommendationsStatus = "ready" | "insufficient_data";
+
+export type DetailedRecommendationCode =
+  | "high_wait_time"
+  | "high_attention_time"
+  | "high_no_show_rate"
+  | "saturated_service"
+  | "peak_demand_hour"
+  | "uneven_service_window_load";
+
+export type RecommendationEvidence = {
+  metric_name: string;
+  observed_value: number;
+  threshold_value: number;
+  context: "historical_operational_profile";
+  hour?: number;
+  service_name?: string;
+  service_code?: string;
+  service_window_name?: string;
+  service_window_code?: string;
+  queue_service_name?: string;
+  queue_service_code?: string;
+};
+
+export type DetailedOperationalRecommendation = {
+  code: DetailedRecommendationCode;
+  title: string;
+  description: string;
+  severity: "warning";
+  suggested_action: string;
+  evidence: RecommendationEvidence;
+};
+
+export type PriorityOperationalRecommendation =
+  | {
+      code: "holiday_operational_review" | "adjacent_holiday_operational_review";
+      priority: "attention";
+    }
+  | {
+      code: "insufficient_historical_data";
+      priority: "information";
+    };
+
+export type OperationalRecommendation =
+  DetailedOperationalRecommendation | PriorityOperationalRecommendation;
+
+export type OperationalRecommendations = {
+  status: OperationalRecommendationsStatus;
+  recommendations: OperationalRecommendation[];
+};
+
 export type DashboardIndexProps = {
   date: string;
   summary: DashboardMetrics;
@@ -67,6 +118,7 @@ export type DashboardIndexProps = {
   service_windows: ServiceWindowMetrics[];
   critical_services: CriticalServiceMetrics[];
   insights: OperationalInsights;
+  operational_recommendations: OperationalRecommendations;
 };
 
 export type MetricCardProps = {
