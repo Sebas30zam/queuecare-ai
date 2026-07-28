@@ -109,6 +109,85 @@ class Analytics::HistoricalMetricsCalculatorTest < ActiveSupport::TestCase
     )
   end
 
+test "calculates ticket distribution by service window" do
+  admissions = QueueService.new(
+    name: "Admissions",
+    code: "ADM"
+  )
+  window_one = ServiceWindow.new(
+    name: "Window 1",
+    code: "V1",
+    queue_service: admissions
+  )
+  window_two = ServiceWindow.new(
+    name: "Window 2",
+    code: "V2",
+    queue_service: admissions
+  )
+
+  tickets = [
+    build_ticket(
+      status: "pending",
+      created_at: time_at(1, 8),
+      queue_service: admissions,
+      service_window: window_one
+    ),
+    build_ticket(
+      status: "pending",
+      created_at: time_at(1, 9),
+      queue_service: admissions,
+      service_window: window_one
+    ),
+    build_ticket(
+      status: "pending",
+      created_at: time_at(2, 8),
+      queue_service: admissions,
+      service_window: window_one
+    ),
+    build_ticket(
+      status: "pending",
+      created_at: time_at(2, 9),
+      queue_service: admissions,
+      service_window: window_two
+    ),
+    build_ticket(
+      status: "pending",
+      created_at: time_at(3, 8),
+      queue_service: admissions,
+      service_window: window_two
+    ),
+    build_ticket(
+      status: "pending",
+      created_at: time_at(3, 9),
+      queue_service: admissions
+    )
+  ]
+
+  result = calculator(tickets:, period_days: 3).call
+
+  assert_equal(
+    [
+      {
+        service_window_name: "Window 1",
+        service_window_code: "V1",
+        queue_service_name: "Admissions",
+        queue_service_code: "ADM",
+        tickets_assigned: 3,
+        share_percentage: 60.0
+      },
+      {
+        service_window_name: "Window 2",
+        service_window_code: "V2",
+        queue_service_name: "Admissions",
+        queue_service_code: "ADM",
+        tickets_assigned: 2,
+        share_percentage: 40.0
+      }
+    ],
+    result[:service_window_distribution]
+  )
+end
+
   test "calculates ticket distribution by creation hour" do
     tickets = [
       build_ticket(
@@ -206,6 +285,7 @@ class Analytics::HistoricalMetricsCalculatorTest < ActiveSupport::TestCase
     assert_equal 0, result[:survey_response_count]
     assert_empty result[:service_distribution]
     assert_empty result[:hourly_distribution]
+    assert_empty result[:service_window_distribution]
   end
 
   test "rejects a period without positive days" do
@@ -236,10 +316,12 @@ class Analytics::HistoricalMetricsCalculatorTest < ActiveSupport::TestCase
     finished_at: nil,
     survey_rating: nil,
     survey_submitted: true,
-    queue_service: nil
+    queue_service: nil,
+    service_window: nil
   )
     ticket = Ticket.new(
       queue_service:,
+      service_window:,
       status:,
       created_at:,
       called_at:,

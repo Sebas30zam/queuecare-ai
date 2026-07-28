@@ -41,7 +41,8 @@ module Analytics
         ),
         survey_response_count: submitted_surveys.size,
         service_distribution: service_distribution,
-        hourly_distribution: hourly_distribution
+        hourly_distribution: hourly_distribution,
+        service_window_distribution: service_window_distribution
       }
     end
 
@@ -81,6 +82,45 @@ module Analytics
         ]
       end
     end
+
+def service_window_distribution
+  window_counts = tickets.filter_map do |ticket|
+    window = ticket.service_window
+    service = window&.queue_service
+
+    if window
+      [
+        window.name,
+        window.code,
+        service&.name,
+        service&.code
+      ]
+    end
+  end.tally
+
+  total = window_counts.values.sum
+
+  window_counts.map do |window_data, count|
+    window_name,
+      window_code,
+      service_name,
+      service_code = window_data
+
+    {
+      service_window_name: window_name,
+      service_window_code: window_code,
+      queue_service_name: service_name,
+      queue_service_code: service_code,
+      tickets_assigned: count,
+      share_percentage: percentage(count, total)
+    }
+  end.sort_by do |window|
+    [
+      -window[:tickets_assigned],
+      window[:service_window_code]
+    ]
+  end
+end
 
     def hourly_distribution
       hour_counts = tickets.filter_map do |ticket|
