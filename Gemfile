@@ -69,3 +69,5 @@ end
 gem "inertia_rails", "~> 3.21"
 
 gem "vite_rails", "~> 3.11"
+
+gem "openai", "~> 0.75.0"
