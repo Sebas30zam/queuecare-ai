@@ -21,7 +21,7 @@ class Ai::OperationsAssistantServiceTest < ActiveSupport::TestCase
 
     context_service_class = ContextServiceClassStub.new(context)
     prompt_builder_class = PromptBuilderClassStub.new(prompt)
-    responses_client = ResponsesClientStub.new(
+    generation_client = GenerationClientStub.new(
       "La operación atendió 25 tickets."
     )
 
@@ -30,7 +30,7 @@ class Ai::OperationsAssistantServiceTest < ActiveSupport::TestCase
       question:,
       context_service_class:,
       prompt_builder_class:,
-      responses_client:
+      generation_client:
     ).call
 
     assert_equal "La operación atendió 25 tickets.", result
@@ -52,7 +52,7 @@ class Ai::OperationsAssistantServiceTest < ActiveSupport::TestCase
 
     assert_equal(
       [ prompt ],
-      responses_client.received_arguments
+      generation_client.received_arguments
     )
   end
 
@@ -91,7 +91,7 @@ class Ai::OperationsAssistantServiceTest < ActiveSupport::TestCase
     end
   end
 
-  class ResponsesClientStub
+  class GenerationClientStub
     attr_reader :received_arguments
 
     def initialize(answer)

@@ -5,13 +5,13 @@ module Ai
       question:,
       context_service_class: OperationsContextService,
       prompt_builder_class: OperationsPromptBuilder,
-      responses_client: OpenaiResponsesClient.new
+      generation_client: GeminiClient.new
     )
       @date = date
       @question = question
       @context_service_class = context_service_class
       @prompt_builder_class = prompt_builder_class
-      @responses_client = responses_client
+      @generation_client = generation_client
     end
 
     def call
@@ -23,7 +23,7 @@ module Ai
         .new(question:, context:)
         .call
 
-      responses_client.call(**prompt)
+      generation_client.call(**prompt)
     end
 
     private
@@ -32,6 +32,6 @@ module Ai
                 :question,
                 :context_service_class,
                 :prompt_builder_class,
-                :responses_client
+                :generation_client
   end
 end
