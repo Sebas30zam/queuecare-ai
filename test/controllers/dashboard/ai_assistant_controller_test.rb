@@ -113,7 +113,7 @@ module Dashboard
         "The AI assistant is temporarily unavailable.",
         response_json.fetch("error")
       )
-      assert_requested(:post, GEMINI_URL, times: 1)
+      assert_requested(:post, GEMINI_URL, times: 3)
     end
 
     private

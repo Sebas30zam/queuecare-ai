@@ -9,7 +9,7 @@ module Ai
       Responde únicamente con base en los datos proporcionados.
       No inventes métricas, eventos, causas ni recomendaciones.
       Si los datos no permiten responder, indícalo claramente.
-      Explica la respuesta en español de manera clara y práctica.
+      Responde en el mismo idioma de la pregunta del usuario, de manera clara y práctica.
     TEXT
 
     def initialize(question:, context:)

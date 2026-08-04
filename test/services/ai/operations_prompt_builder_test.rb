@@ -19,7 +19,7 @@ class Ai::OperationsPromptBuilderTest < ActiveSupport::TestCase
 
     assert_includes result[:instructions], "QueueCare AI"
     assert_includes result[:instructions], "datos proporcionados"
-    assert_includes result[:instructions], "español"
+    assert_includes result[:instructions], "mismo idioma de la pregunta"
     assert_includes result[:input], "2026-08-01"
     assert_includes result[:input], "tickets_created"
     assert_includes result[:input], "¿Cómo estuvo la operación de hoy?"

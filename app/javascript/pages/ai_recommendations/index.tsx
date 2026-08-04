@@ -1,4 +1,5 @@
 import AppLayout from "../../layouts/AppLayout";
+import AiAssistantChat from "./components/AiAssistantChat";
 import type {
   DetailedOperationalRecommendation,
   OperationalRecommendation,
@@ -238,6 +239,7 @@ export default function AiRecommendationsIndex({
             </div>
           )}
         </section>
+        <AiAssistantChat />
       </section>
     </AppLayout>
   );

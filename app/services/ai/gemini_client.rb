@@ -7,15 +7,20 @@ module Ai
     DEFAULT_MODEL = "gemini-3.5-flash-lite"
     HOSTNAME = "generativelanguage.googleapis.com"
     PORT = 443
+    RETRYABLE_STATUS_CODES = [ 429, 503 ].freeze
+    MAX_RETRIES = 2
+    RETRY_DELAY = 0.5
 
     def initialize(
       api_key: ENV.fetch("GEMINI_API_KEY"),
       model: DEFAULT_MODEL,
-      http_client: Net::HTTP
+      http_client: Net::HTTP,
+      sleeper: Kernel
     )
       @api_key = api_key
       @model = model
       @http_client = http_client
+      @sleeper = sleeper
     end
 
     def call(instructions:, input:)
@@ -24,20 +29,39 @@ module Ai
         input:
       )
 
-      response = http_client.start(
+      retries = 0
+
+      loop do
+        response = send_request(request)
+
+        if retryable?(response) && retries < MAX_RETRIES
+          retries += 1
+          sleeper.sleep(RETRY_DELAY * retries)
+          next
+        end
+
+        return parse_response(response)
+      end
+    end
+
+    private
+
+    attr_reader :api_key, :model, :http_client, :sleeper
+
+    def send_request(request)
+      http_client.start(
         HOSTNAME,
         PORT,
         use_ssl: true
       ) do |http|
         http.request(request)
       end
-
-      parse_response(response)
     end
 
-    private
+    def retryable?(response)
+      RETRYABLE_STATUS_CODES.include?(response.code.to_i)
+    end
 
-    attr_reader :api_key, :model, :http_client
 
     def build_request(instructions:, input:)
       request = Net::HTTP::Post.new(
