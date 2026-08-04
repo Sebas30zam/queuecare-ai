@@ -25,6 +25,10 @@ Rails.application.routes.draw do
        to: "dashboard/ai_assistant#create",
        as: :dashboard_ai_assistant
 
+  get "/ai-recommendations",
+      to: "ai_recommendations#index",
+      as: :ai_recommendations
+
   get "/agent-queue",
       to: "agent_queues#index",
       as: :agent_queue
