@@ -15,7 +15,8 @@ module Analytics
 
       metrics = HistoricalMetricsCalculator.new(
         tickets:,
-        period_days:
+        period_days:,
+        start_date:
       ).call
 
       {

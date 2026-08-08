@@ -4,7 +4,7 @@ module Ai
   class GeminiClient
     class Error < StandardError; end
 
-    DEFAULT_MODEL = "gemini-3.5-flash-lite"
+    DEFAULT_MODEL = "gemini-3.1-flash-lite"
     HOSTNAME = "generativelanguage.googleapis.com"
     PORT = 443
     RETRYABLE_STATUS_CODES = [ 429, 503 ].freeze

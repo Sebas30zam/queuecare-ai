@@ -23,7 +23,7 @@ class Ai::GeminiClientTest < ActiveSupport::TestCase
 
     result = Ai::GeminiClient.new(
       api_key: "test-api-key",
-      model: "gemini-3.5-flash-lite",
+      model: "gemini-3.1-flash-lite",
       http_client:
     ).call(
       instructions: "Responde usando únicamente los datos.",
@@ -46,7 +46,7 @@ class Ai::GeminiClientTest < ActiveSupport::TestCase
     assert_equal "application/json", request["Content-Type"]
 
     assert_equal(
-      "/v1beta/models/gemini-3.5-flash-lite:generateContent",
+      "/v1beta/models/gemini-3.1-flash-lite:generateContent",
       request.path
     )
 

@@ -50,6 +50,20 @@ class Analytics::HistoricalOperationalProfileServiceTest <
     assert_equal 50.0, metrics[:no_show_rate_percentage]
     assert_equal 10.0, metrics[:average_wait_time_minutes]
     assert_equal 20.0, metrics[:average_attention_time_minutes]
+
+    assert_equal 14, metrics[:daily_activity].size
+    assert_equal(
+      "2040-06-01",
+      metrics[:daily_activity].first[:date]
+    )
+    assert_equal(
+      "2040-06-14",
+      metrics[:daily_activity].last[:date]
+    )
+    assert_equal(
+      [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+      metrics[:daily_activity].pluck(:tickets_created)
+    )
   end
 
   test "accepts an ISO cutoff date and returns neutral metrics" do
