@@ -248,6 +248,152 @@ end
     assert_equal 0.5, result[:average_daily_demand]
   end
 
+  test "builds historical activity including zero demand days" do
+    tickets = [
+      build_ticket(
+        status: "attended",
+        created_at: time_at(1, 8)
+      ),
+      build_ticket(
+        status: "no_show",
+        created_at: time_at(3, 9)
+      )
+    ]
+
+    result = calculator(
+      tickets:,
+      period_days: 4,
+      start_date: Date.new(2026, 6, 1)
+    ).call
+
+    assert_equal(
+      [
+        {
+          status: "pending",
+          tickets: 0,
+          share_percentage: 0.0
+        },
+        {
+          status: "called",
+          tickets: 0,
+          share_percentage: 0.0
+        },
+        {
+          status: "in_attention",
+          tickets: 0,
+          share_percentage: 0.0
+        },
+        {
+          status: "attended",
+          tickets: 1,
+          share_percentage: 50.0
+        },
+        {
+          status: "no_show",
+          tickets: 1,
+          share_percentage: 50.0
+        },
+        {
+          status: "cancelled",
+          tickets: 0,
+          share_percentage: 0.0
+        }
+      ],
+      result[:status_distribution]
+    )
+
+    assert_equal(
+      %w[
+        2026-06-01
+        2026-06-02
+        2026-06-03
+        2026-06-04
+      ],
+      result[:daily_activity].pluck(:date)
+    )
+
+    assert_equal(
+      %w[monday tuesday wednesday thursday],
+      result[:daily_activity].pluck(:weekday)
+    )
+
+    assert_equal(
+      [ 1, 0, 1, 0 ],
+      result[:daily_activity].pluck(:tickets_created)
+    )
+
+    assert_equal(
+      {
+        "pending" => 0,
+        "called" => 0,
+        "in_attention" => 0,
+        "attended" => 1,
+        "no_show" => 0,
+        "cancelled" => 0
+      },
+      result.dig(:daily_activity, 0, :status_counts)
+    )
+
+    assert_equal(
+      {
+        "pending" => 0,
+        "called" => 0,
+        "in_attention" => 0,
+        "attended" => 0,
+        "no_show" => 0,
+        "cancelled" => 0
+      },
+      result.dig(:daily_activity, 1, :status_counts)
+    )
+
+    assert_equal(
+      %w[monday tuesday wednesday thursday],
+      result[:weekday_activity].pluck(:weekday)
+    )
+
+    assert_equal(
+      [ 1, 1, 1, 1 ],
+      result[:weekday_activity].pluck(:days_observed)
+    )
+
+    assert_equal(
+      [ 1, 0, 1, 0 ],
+      result[:weekday_activity].pluck(:tickets_created)
+    )
+  end
+
+  test "aggregates repeated weekdays across the historical period" do
+    tickets = [
+      build_ticket(
+        status: "pending",
+        created_at: time_at(1, 8)
+      ),
+      build_ticket(
+        status: "pending",
+        created_at: time_at(1, 9)
+      ),
+      build_ticket(
+        status: "pending",
+        created_at: time_at(8, 8)
+      )
+    ]
+
+    result = calculator(
+      tickets:,
+      period_days: 8,
+      start_date: Date.new(2026, 6, 1)
+    ).call
+
+    monday = result[:weekday_activity].find do |activity|
+      activity[:weekday] == "monday"
+    end
+
+    assert_equal 2, monday[:days_observed]
+    assert_equal 3, monday[:tickets_created]
+    assert_equal 1.5, monday[:average_daily_demand]
+    assert_equal 3, monday.dig(:status_counts, "pending")
+  end
+
   test "ignores incomplete durations and unsubmitted surveys" do
     incomplete_ticket = build_ticket(
       status: "in_attention",
@@ -301,10 +447,11 @@ end
 
   private
 
-  def calculator(tickets:, period_days:)
+  def calculator(tickets:, period_days:, start_date: nil)
     Analytics::HistoricalMetricsCalculator.new(
       tickets:,
-      period_days:
+      period_days:,
+      start_date:
     )
   end
 
