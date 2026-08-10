@@ -8,8 +8,8 @@ class QueueService < ApplicationRecord
   validates :name, presence: true
   validates :code, presence: true, uniqueness: true
   validates :estimated_attention_minutes,
-            numericality: { greater_than: 0 },
-            allow_nil: true
+            presence: true,
+            numericality: { greater_than: 0 }
 
   private
 

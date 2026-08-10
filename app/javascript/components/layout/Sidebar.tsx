@@ -21,7 +21,6 @@ type NavigationItem = {
 };
 
 const navigationItems: NavigationItem[] = [
-  { label: "Home", href: "/" },
   {
     label: "Dashboard",
     href: "/dashboard",
@@ -72,7 +71,7 @@ export default function Sidebar() {
 
       <nav className="space-y-1">
         {visibleNavigationItems.map((item) => {
-          const isActive = item.href === "/" ? url === "/" : url.startsWith(item.href);
+          const isActive = url.startsWith(item.href);
 
           return (
             <a
