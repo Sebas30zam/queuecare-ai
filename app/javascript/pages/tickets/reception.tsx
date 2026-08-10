@@ -181,7 +181,7 @@ export default function TicketReception({
           </div>
         )}
 
-        <div className="grid min-h-0 flex-1 gap-4 xl:grid-cols-[minmax(0,1fr)_330px]">
+        <div className="mt-2 grid min-h-0 flex-1 gap-4 xl:grid-cols-[minmax(0,1fr)_330px]">
           <form
             onSubmit={submit}
             className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"

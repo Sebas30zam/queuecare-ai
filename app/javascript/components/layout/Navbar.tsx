@@ -15,9 +15,7 @@ type SharedProps = {
 
 export default function Navbar() {
   const { auth } = usePage<SharedProps>().props;
-  const { url } = usePage<SharedProps>();
   const user = auth?.user;
-  const isDashboard = url.startsWith("/dashboard");
 
   function handleLogout() {
     router.delete("/logout");
@@ -26,20 +24,13 @@ export default function Navbar() {
   return (
     <header className="border-b border-slate-200 bg-white px-6 py-3">
       <div className="flex items-center justify-between gap-4">
-        {isDashboard ? (
-          <div>
-            <p className="text-sm font-bold text-slate-950">Operational Dashboard</p>
-            <p className="text-[10px] text-slate-400">Real-time service monitoring</p>
-          </div>
-        ) : (
-          <div className="w-full max-w-xs">
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white"
-            />
-          </div>
-        )}
+        <div className="w-full max-w-xs">
+          <input
+            type="text"
+            placeholder="Search..."
+            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white"
+          />
+        </div>
 
         <div className="flex items-center gap-4">
           <div className="text-right">

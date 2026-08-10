@@ -74,13 +74,13 @@ export default function QueueServicesIndex({
     <AppLayout>
       <section className="space-y-6">
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-col gap-6 px-6 py-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-3 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.14em] text-blue-700">
                 Service configuration
               </span>
 
-              <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">
+              <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950">
                 Service Directory
               </h1>
 

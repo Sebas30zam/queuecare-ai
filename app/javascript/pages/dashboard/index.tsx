@@ -30,11 +30,13 @@ export default function DashboardIndex({
     <AppLayout>
       <section className="mx-auto max-w-[1500px] space-y-4">
         <div>
-          <h1 className="text-lg font-bold tracking-tight text-slate-950">General Overview</h1>
+          <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.14em] text-blue-700">
+            Dashboard
+          </span>
 
-          <p className="mt-1 text-[11px] text-slate-500">
-            Operational monitoring of today's queues and services.
-          </p>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950">
+            General Overview
+          </h1>
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">

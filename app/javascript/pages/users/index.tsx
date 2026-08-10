@@ -82,7 +82,7 @@ export default function UsersIndex({ users, current_user_id: currentUserId }: Us
     <AppLayout>
       <section className="space-y-6">
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-col gap-6 px-6 py-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-3 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <div className="mb-2 flex items-center gap-2">
                 <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.14em] text-blue-700">
@@ -90,9 +90,11 @@ export default function UsersIndex({ users, current_user_id: currentUserId }: Us
                 </span>
               </div>
 
-              <h1 className="text-3xl font-bold tracking-tight text-slate-950">Staff Directory</h1>
+              <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950">
+                Staff Directory
+              </h1>
 
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+              <p className="mt-1 max-w-2xl text-sm text-slate-600">
                 Manage staff accounts, access roles, and operational status for QueueCare AI.
               </p>
             </div>
