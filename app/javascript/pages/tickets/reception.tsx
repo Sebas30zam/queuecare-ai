@@ -1,6 +1,6 @@
 import { router, useForm, usePage } from "@inertiajs/react";
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import AppLayout from "../../layouts/AppLayout";
 import type { FlashData } from "../../types";
@@ -58,6 +58,26 @@ function formatStatus(status: string) {
     .join(" ");
 }
 
+function statusClasses(status: string) {
+  if (status === "pending") {
+    return "bg-amber-50 text-amber-700 ring-amber-600/10";
+  }
+
+  if (status === "called") {
+    return "bg-blue-50 text-blue-700 ring-blue-600/10";
+  }
+
+  if (status === "in_attention") {
+    return "bg-cyan-50 text-cyan-700 ring-cyan-600/10";
+  }
+
+  if (status === "attended") {
+    return "bg-emerald-50 text-emerald-700 ring-emerald-600/10";
+  }
+
+  return "bg-slate-100 text-slate-600 ring-slate-500/10";
+}
+
 export default function TicketReception({
   queue_services: queueServices,
   assistance_types: assistanceTypes,
@@ -71,6 +91,12 @@ export default function TicketReception({
     queue_service_id: "",
     assistance_type: "",
   });
+
+  const selectedService = useMemo(
+    () =>
+      queueServices.find((service) => String(service.id) === form.data.queue_service_id) ?? null,
+    [form.data.queue_service_id, queueServices],
+  );
 
   const canSubmit =
     form.data.queue_service_id !== "" &&
@@ -116,115 +142,203 @@ export default function TicketReception({
 
   return (
     <AppLayout>
-      <section className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-950">
-            Assisted Ticket Intake
-          </h1>
+      <section className="flex h-[calc(100vh-8rem)] min-h-0 flex-col gap-3 overflow-hidden">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-2 px-5 py-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.14em] text-blue-700">
+                Ticket operations
+              </span>
 
-          <p className="mt-2 text-sm text-slate-600">
-            Create a ticket for someone who needs help using the self-service process.
-          </p>
+              <h1 className="mt-1.5 text-2xl font-bold tracking-tight text-slate-950">
+                Assisted Ticket Intake
+              </h1>
+
+              <p className="mt-1 max-w-2xl text-sm text-slate-600">
+                Create a ticket for customers who need staff assistance during the intake process.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-1.5">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-blue-500">
+                Intake mode
+              </p>
+
+              <p className="mt-1 text-sm font-bold text-blue-800">Staff assisted</p>
+            </div>
+          </div>
         </div>
 
         {flash?.notice && (
-          <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
             {flash.notice}
           </div>
         )}
 
         {flash?.alert && (
-          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
             {flash.alert}
           </div>
         )}
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="grid min-h-0 flex-1 gap-4 xl:grid-cols-[minmax(0,1fr)_330px]">
           <form
             onSubmit={submit}
-            className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
+            className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
           >
-            <div className="border-b border-slate-200 px-6 py-5">
-              <h2 className="text-lg font-bold text-slate-950">Create Assisted Ticket</h2>
+            <div className="border-b border-slate-100 bg-gradient-to-r from-blue-50/70 via-white to-white px-5 py-4">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-600">
+                New ticket
+              </p>
+
+              <h2 className="mt-1 text-xl font-bold text-slate-950">Create Assisted Ticket</h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                The ticket will use normal priority unless assistance is requested.
+                Select the service and indicate whether the customer requires priority assistance.
               </p>
             </div>
 
-            <div className="space-y-6 px-6 py-6">
-              <label className="block">
-                <span className="text-sm font-semibold text-slate-700">
-                  Service <span className="text-red-500">*</span>
-                </span>
+            <div className="grid min-h-0 flex-1 gap-x-6 gap-y-4 overflow-hidden p-5 lg:grid-cols-2 lg:content-start">
+              <section>
+                <div className="mb-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+                    Service
+                  </p>
 
-                <select
-                  required
-                  value={form.data.queue_service_id}
-                  onChange={(event) => form.setData("queue_service_id", event.target.value)}
-                  className="mt-2 w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  <h3 className="mt-1 text-base font-bold text-slate-900">
+                    Select destination service
+                  </h3>
+                </div>
+
+                <label className="block">
+                  <span className="mb-2 block text-sm font-bold text-slate-700">
+                    Queue service <span className="text-red-500">*</span>
+                  </span>
+
+                  <select
+                    required
+                    value={form.data.queue_service_id}
+                    onChange={(event) => form.setData("queue_service_id", event.target.value)}
+                    className="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm shadow-sm transition focus:border-blue-500 focus:bg-white focus:ring-blue-500"
+                  >
+                    <option value="">Select a service</option>
+
+                    {queueServices.map((service) => (
+                      <option key={service.id} value={service.id}>
+                        {service.name} ({service.code})
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </section>
+
+              <section className="lg:border-l lg:border-slate-100 lg:pl-6">
+                <div className="mb-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+                    Priority support
+                  </p>
+
+                  <h3 className="mt-1 text-base font-bold text-slate-900">
+                    Assistance requirements
+                  </h3>
+                </div>
+
+                <label
+                  className={`flex cursor-pointer items-start justify-between gap-4 rounded-xl border p-4 transition ${
+                    requestAssistance
+                      ? "border-blue-200 bg-blue-50/70"
+                      : "border-slate-200 bg-slate-50 hover:bg-white"
+                  }`}
                 >
-                  <option value="">Select a service</option>
+                  <div className="flex gap-4">
+                    <div
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-black ${
+                        requestAssistance ? "bg-blue-600 text-white" : "bg-white text-slate-500"
+                      }`}
+                    >
+                      A
+                    </div>
 
-                  {queueServices.map((service) => (
-                    <option key={service.id} value={service.id}>
-                      {service.name} ({service.code})
-                    </option>
-                  ))}
-                </select>
-              </label>
+                    <div>
+                      <p className="text-sm font-bold text-slate-900">Request assistance</p>
 
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <label className="flex cursor-pointer items-start gap-3">
+                      <p className="mt-1 max-w-xl text-xs leading-5 text-slate-500">
+                        Use this option for senior adults, disability, pregnancy, or a scheduled
+                        appointment.
+                      </p>
+                    </div>
+                  </div>
+
                   <input
                     type="checkbox"
                     checked={requestAssistance}
                     onChange={(event) => handleAssistanceChange(event.target.checked)}
-                    className="mt-1 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    className="mt-2 h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                   />
-
-                  <span>
-                    <span className="block text-sm font-semibold text-slate-800">
-                      Request assistance
-                    </span>
-
-                    <span className="mt-1 block text-xs leading-5 text-slate-500">
-                      Use this option for senior adults, disability, pregnancy, or a scheduled
-                      appointment.
-                    </span>
-                  </span>
                 </label>
 
                 {requestAssistance && (
-                  <label className="mt-4 block border-t border-slate-200 pt-4">
-                    <span className="text-sm font-semibold text-slate-700">
-                      Assistance type <span className="text-red-500">*</span>
-                    </span>
+                  <div className="mt-3 rounded-xl border border-blue-100 bg-blue-50/40 p-4">
+                    <label className="block">
+                      <span className="mb-2 block text-sm font-bold text-slate-700">
+                        Assistance type <span className="text-red-500">*</span>
+                      </span>
 
-                    <select
-                      required
-                      value={form.data.assistance_type}
-                      onChange={(event) => form.setData("assistance_type", event.target.value)}
-                      className="mt-2 w-full rounded-lg border-slate-300 bg-white text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    >
-                      <option value="">Select assistance type</option>
+                      <select
+                        required
+                        value={form.data.assistance_type}
+                        onChange={(event) => form.setData("assistance_type", event.target.value)}
+                        className="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      >
+                        <option value="">Select assistance type</option>
 
-                      {assistanceTypes.map((assistanceType) => (
-                        <option key={assistanceType} value={assistanceType}>
-                          {assistanceLabels[assistanceType] ?? assistanceType}
-                        </option>
-                      ))}
-                    </select>
+                        {assistanceTypes.map((assistanceType) => (
+                          <option key={assistanceType} value={assistanceType}>
+                            {assistanceLabels[assistanceType] ?? assistanceType}
+                          </option>
+                        ))}
+                      </select>
 
-                    <p className="mt-2 text-xs text-slate-500">
-                      Assistance requests may be verified at the service window.
-                    </p>
-                  </label>
+                      <p className="mt-2 text-xs leading-5 text-slate-500">
+                        Assistance requests may be verified at the service window.
+                      </p>
+                    </label>
+                  </div>
                 )}
-              </div>
+              </section>
+
+              <section className="lg:col-span-2">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+                    Ticket summary
+                  </p>
+
+                  <div className="mt-2 grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <p className="text-xs font-medium text-slate-500">Service</p>
+
+                      <p className="mt-1 text-sm font-bold text-slate-900">
+                        {selectedService
+                          ? `${selectedService.name} (${selectedService.code})`
+                          : "Not selected"}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-xs font-medium text-slate-500">Priority handling</p>
+
+                      <p className="mt-1 text-sm font-bold text-slate-900">
+                        {requestAssistance
+                          ? assistanceLabels[form.data.assistance_type] || "Select assistance type"
+                          : "Normal"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </section>
             </div>
 
-            <div className="flex justify-end gap-3 border-t border-slate-200 bg-slate-50 px-6 py-4">
+            <div className="flex flex-col-reverse gap-3 border-t border-slate-100 bg-slate-50/70 px-5 py-3 sm:flex-row sm:justify-end">
               <button
                 type="button"
                 onClick={() => {
@@ -232,7 +346,7 @@ export default function TicketReception({
                   setRequestAssistance(false);
                 }}
                 disabled={form.processing}
-                className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Clear
               </button>
@@ -240,77 +354,100 @@ export default function TicketReception({
               <button
                 type="submit"
                 disabled={!canSubmit}
-                className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {form.processing ? "Creating..." : "Generate ticket"}
+                {form.processing ? "Creating ticket..." : "Generate ticket"}
               </button>
             </div>
           </form>
 
-          <aside className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-4">
-              <div>
-                <h2 className="font-bold text-slate-950">Recent Tickets</h2>
+          <aside className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="shrink-0 border-b border-slate-100 px-4 py-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
+                    Activity
+                  </p>
 
-                <p className="mt-1 text-xs text-slate-500">Latest tickets in the system</p>
+                  <h2 className="mt-1 text-lg font-bold text-slate-950">Recent Tickets</h2>
+                </div>
+
+                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">
+                  {recentTickets.length}
+                </span>
               </div>
-
-              <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
-                {recentTickets.length}
-              </span>
             </div>
 
-            <div className="mt-4 space-y-3">
+            <div className="min-h-0 flex-1 overflow-y-auto p-3">
               {recentTickets.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-slate-300 px-4 py-8 text-center">
-                  <p className="text-sm font-medium text-slate-600">No tickets created yet.</p>
+                <div className="rounded-xl border border-dashed border-slate-300 px-4 py-10 text-center">
+                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-400">
+                    0
+                  </div>
+
+                  <p className="mt-3 text-sm font-bold text-slate-700">No tickets yet</p>
+
+                  <p className="mt-1 text-xs text-slate-500">
+                    Newly created tickets will appear here.
+                  </p>
                 </div>
               ) : (
-                recentTickets.map((ticket) => (
-                  <article key={ticket.id} className="border-l-2 border-blue-600 py-1 pl-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-bold text-slate-950">{ticket.ticket_number}</p>
+                <div className="space-y-3">
+                  {recentTickets.map((ticket) => (
+                    <article
+                      key={ticket.id}
+                      className="rounded-xl border border-slate-200 bg-white p-4 transition hover:border-blue-200 hover:shadow-sm"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-lg font-black tracking-tight text-slate-950">
+                            {ticket.ticket_number}
+                          </p>
 
-                        <p className="mt-1 text-xs font-medium text-slate-600">
-                          {ticket.service.name}
-                        </p>
-                      </div>
+                          <p className="mt-1 text-xs font-semibold text-slate-500">
+                            {ticket.service.name}
+                          </p>
+                        </div>
 
-                      <div className="flex flex-col items-end gap-2">
-                        <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">
-                          {ticket.assistance_type
-                            ? assistanceLabels[ticket.assistance_type]
-                            : "Normal"}
-                        </span>
-
-                        <span className="rounded-full bg-blue-50 px-2 py-1 text-[10px] font-semibold text-blue-700">
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold ring-1 ring-inset ${statusClasses(
+                            ticket.status,
+                          )}`}
+                        >
                           {formatStatus(ticket.status)}
                         </span>
                       </div>
-                    </div>
 
-                    <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
-                      <span>
-                        {ticket.intake_source === "self_service" ? "Self-service" : "Assisted"}
-                      </span>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold text-slate-600">
+                          {ticket.assistance_type
+                            ? assistanceLabels[ticket.assistance_type]
+                            : "Normal priority"}
+                        </span>
 
-                      <span>{formatCreatedAt(ticket.created_at)}</span>
-                    </div>
-
-                    {ticket.status === "pending" && (
-                      <div className="mt-3 flex justify-end">
-                        <button
-                          type="button"
-                          onClick={() => handleCancelTicket(ticket)}
-                          className="rounded-lg px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50"
-                        >
-                          Cancel
-                        </button>
+                        <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-semibold text-blue-700">
+                          {ticket.intake_source === "self_service" ? "Self-service" : "Assisted"}
+                        </span>
                       </div>
-                    )}
-                  </article>
-                ))
+
+                      <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
+                        <span className="text-xs text-slate-400">
+                          Created {formatCreatedAt(ticket.created_at)}
+                        </span>
+
+                        {ticket.status === "pending" && (
+                          <button
+                            type="button"
+                            onClick={() => handleCancelTicket(ticket)}
+                            className="rounded-lg px-3 py-1.5 text-xs font-bold text-red-600 transition hover:bg-red-50"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      </div>
+                    </article>
+                  ))}
+                </div>
               )}
             </div>
           </aside>
