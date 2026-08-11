@@ -18,8 +18,12 @@ class Ai::OperationsPromptBuilderTest < ActiveSupport::TestCase
     ).call
 
     assert_includes result[:instructions], "QueueCare AI"
-    assert_includes result[:instructions], "datos proporcionados"
-    assert_includes result[:instructions], "mismo idioma de la pregunta"
+    assert_includes result[:instructions], "operational data provided"
+    assert_includes result[:instructions], "same language as the user's question"
+    assert_includes result[:instructions], "entire answer must be in English"
+    assert_includes result[:instructions], "entire answer must be in Spanish"
+    assert_includes result[:input], "USER QUESTION:"
+    assert_includes result[:input], "FINAL LANGUAGE REQUIREMENT:"
     assert_includes result[:input], "2026-08-01"
     assert_includes result[:input], "tickets_created"
     assert_includes result[:input], "¿Cómo estuvo la operación de hoy?"
