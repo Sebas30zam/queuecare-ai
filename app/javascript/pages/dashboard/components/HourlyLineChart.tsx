@@ -10,7 +10,7 @@ export default function HourlyLineChart({ activity }: HourlyLineChartProps) {
   if (visibleActivity.length === 0) {
     return (
       <div className="flex h-52 items-center justify-center text-xs text-slate-400">
-        No hourly activity today.
+        No hourly activity for the selected period.
       </div>
     );
   }

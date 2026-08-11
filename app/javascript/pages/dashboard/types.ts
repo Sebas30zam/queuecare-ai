@@ -124,7 +124,8 @@ export type OperationalRecommendations = {
 };
 
 export type DashboardIndexProps = {
-  date: string;
+  start_date: string;
+  end_date: string;
   summary: DashboardMetrics;
   services: ServiceMetrics[];
   hourly_activity: HourlyActivity[];

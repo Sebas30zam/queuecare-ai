@@ -33,10 +33,38 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "supervisor can access dashboard with date range" do
+    login_as(users(:supervisor_user))
+
+    get dashboard_url(
+      start_date: "2026-06-10",
+      end_date: "2026-06-15"
+    )
+
+    assert_response :success
+    assert_equal "2026-06-10", inertia_props.fetch("start_date")
+    assert_equal "2026-06-15", inertia_props.fetch("end_date")
+  end
+
   test "receptionist cannot access dashboard" do
     login_as(users(:receptionist_user))
 
     get dashboard_url
+
+    assert_redirected_to root_url
+    assert_equal(
+      "You are not authorized to access this page.",
+      flash[:alert]
+    )
+  end
+
+  test "receptionist cannot access dashboard with date range" do
+    login_as(users(:receptionist_user))
+
+    get dashboard_url(
+      start_date: "2026-06-10",
+      end_date: "2026-06-15"
+    )
 
     assert_redirected_to root_url
     assert_equal(
@@ -57,6 +85,21 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     )
   end
 
+  test "agent cannot access dashboard with date range" do
+    login_as(users(:agent_user))
+
+    get dashboard_url(
+      start_date: "2026-06-10",
+      end_date: "2026-06-15"
+    )
+
+    assert_redirected_to root_url
+    assert_equal(
+      "You are not authorized to access this page.",
+      flash[:alert]
+    )
+  end
+
   test "renders dashboard index" do
     login_as(users(:admin_user))
 
@@ -65,12 +108,84 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_equal "dashboard/index", inertia_page.fetch("component")
   end
 
-  test "includes date prop" do
+  test "uses current date for both range dates by default" do
     login_as(users(:admin_user))
 
     get dashboard_url
 
-    assert_equal Date.current.iso8601, inertia_props.fetch("date")
+    assert_equal Date.current.iso8601, inertia_props.fetch("start_date")
+    assert_equal Date.current.iso8601, inertia_props.fetch("end_date")
+  end
+
+  test "uses selected date range when valid params are provided" do
+    login_as(users(:admin_user))
+
+    get dashboard_url(
+      start_date: "2026-06-10",
+      end_date: "2026-06-15"
+    )
+
+    assert_response :success
+    assert_equal "2026-06-10", inertia_props.fetch("start_date")
+    assert_equal "2026-06-15", inertia_props.fetch("end_date")
+  end
+
+  test "supports a single day when start and end date match" do
+    login_as(users(:admin_user))
+
+    get dashboard_url(
+      start_date: "2026-06-10",
+      end_date: "2026-06-10"
+    )
+
+    assert_response :success
+    assert_equal "2026-06-10", inertia_props.fetch("start_date")
+    assert_equal "2026-06-10", inertia_props.fetch("end_date")
+  end
+
+  test "handles invalid date range safely" do
+    login_as(users(:admin_user))
+
+    get dashboard_url(
+      start_date: "invalid-date",
+      end_date: "2026-06-15"
+    )
+
+    assert_response :success
+    assert_equal Date.current.iso8601, inertia_props.fetch("start_date")
+    assert_equal Date.current.iso8601, inertia_props.fetch("end_date")
+  end
+
+  test "handles reversed date range safely" do
+    login_as(users(:admin_user))
+
+    get dashboard_url(
+      start_date: "2026-06-15",
+      end_date: "2026-06-10"
+    )
+
+    assert_response :success
+    assert_equal Date.current.iso8601, inertia_props.fetch("start_date")
+    assert_equal Date.current.iso8601, inertia_props.fetch("end_date")
+  end
+
+  test "returns empty metrics for range without tickets" do
+    login_as(users(:admin_user))
+
+    get dashboard_url(
+      start_date: "2025-01-01",
+      end_date: "2025-01-05"
+    )
+
+    assert_response :success
+
+    summary = inertia_props.fetch("summary")
+
+    assert_equal 0, summary.fetch("tickets_created")
+    assert_equal 0, summary.fetch("tickets_attended")
+    assert_equal 0, summary.fetch("tickets_pending")
+    assert_equal 0, summary.fetch("tickets_no_show")
+    assert_equal 0, summary.fetch("tickets_cancelled")
   end
 
   test "includes summary prop" do
@@ -178,9 +293,7 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
       inertia_props.fetch("operational_recommendations")
 
     assert operational_recommendations.key?("status")
-assert operational_recommendations.key?(
-  "next_holiday_alert"
-)
+    assert operational_recommendations.key?("next_holiday_alert")
     assert_kind_of(
       Array,
       operational_recommendations.fetch("recommendations")

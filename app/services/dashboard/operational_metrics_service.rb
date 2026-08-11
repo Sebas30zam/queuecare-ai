@@ -19,12 +19,20 @@ module Dashboard
       CANCELLED_STATUS
     ].freeze
 
-    def initialize(date: Date.current)
-      @date = date
+    def initialize(
+      date: nil,
+      start_date: nil,
+      end_date: nil
+    )
+      resolved_start_date = start_date || date || Date.current
+      resolved_end_date = end_date || date || resolved_start_date
+
+      @start_date = resolved_start_date
+      @end_date = resolved_end_date
     end
 
     def call
-      tickets = tickets_for_date.to_a
+      tickets = tickets_for_range.to_a
       services = active_services.to_a
       summary = metrics_for(tickets)
       service_rows = service_metrics(tickets, services)
@@ -32,7 +40,8 @@ module Dashboard
       critical_rows = critical_service_metrics(service_rows, summary)
 
       {
-        date: date.iso8601,
+        start_date: start_date.iso8601,
+        end_date: end_date.iso8601,
         summary: summary,
         services: service_rows,
         hourly_activity: hourly_rows,
@@ -48,16 +57,17 @@ module Dashboard
 
     private
 
-    attr_reader :date
+    attr_reader :start_date, :end_date
 
-    def day_range
-      date.in_time_zone.all_day
+    def date_range
+      start_date.in_time_zone.beginning_of_day..
+        end_date.in_time_zone.end_of_day
     end
 
-    def tickets_for_date
+    def tickets_for_range
       Ticket
         .includes(:satisfaction_survey)
-        .where(created_at: day_range)
+        .where(created_at: date_range)
     end
 
     def active_services

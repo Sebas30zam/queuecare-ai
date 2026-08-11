@@ -10,7 +10,7 @@ export default function TicketsByServiceChart({ services }: TicketsByServiceChar
   if (!hasActivity) {
     return (
       <div className="flex h-52 items-center justify-center text-xs text-slate-400">
-        No tickets created today.
+        No tickets created for the selected period.
       </div>
     );
   }

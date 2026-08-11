@@ -12,7 +12,7 @@ export default function AverageWaitChart({ services }: AverageWaitChartProps) {
   if (servicesWithWaitData.length === 0) {
     return (
       <div className="flex min-h-44 items-center justify-center text-xs text-slate-400">
-        No wait times recorded today.
+        No wait times recorded for the selected period.
       </div>
     );
   }

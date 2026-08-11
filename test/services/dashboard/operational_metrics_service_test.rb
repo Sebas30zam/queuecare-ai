@@ -200,6 +200,64 @@ class Dashboard::OperationalMetricsServiceTest < ActiveSupport::TestCase
     assert_equal 0, finance_metrics[:tickets_pending]
   end
 
+  test "includes tickets across the selected date range" do
+    create_ticket(
+      status: "pending",
+      daily_sequence: 201,
+      created_at: Time.zone.local(2026, 6, 13, 10, 0, 0)
+    )
+
+    create_ticket(
+      status: "attended",
+      daily_sequence: 202,
+      created_at: Time.zone.local(2026, 6, 14, 11, 0, 0),
+      started_at: Time.zone.local(2026, 6, 14, 11, 10, 0),
+      finished_at: Time.zone.local(2026, 6, 14, 11, 20, 0)
+    )
+
+    create_ticket(
+      status: "pending",
+      daily_sequence: 203,
+      created_at: Time.zone.local(2026, 6, 15, 9, 0, 0)
+    )
+
+    result = service(
+      start_date: Date.new(2026, 6, 13),
+      end_date: Date.new(2026, 6, 15)
+    ).call
+
+    assert_equal 3, result[:summary][:tickets_created]
+    assert_equal "2026-06-13", result[:start_date]
+    assert_equal "2026-06-15", result[:end_date]
+  end
+
+  test "excludes tickets outside the selected date range" do
+    create_ticket(
+      status: "pending",
+      daily_sequence: 204,
+      created_at: Time.zone.local(2026, 6, 12, 23, 59, 0)
+    )
+
+    create_ticket(
+      status: "pending",
+      daily_sequence: 205,
+      created_at: Time.zone.local(2026, 6, 13, 0, 0, 0)
+    )
+
+    create_ticket(
+      status: "pending",
+      daily_sequence: 206,
+      created_at: Time.zone.local(2026, 6, 15, 23, 59, 0)
+    )
+
+    result = service(
+      start_date: Date.new(2026, 6, 13),
+      end_date: Date.new(2026, 6, 15)
+    ).call
+
+    assert_equal 2, result[:summary][:tickets_created]
+  end
+
   test "excludes tickets created outside the selected date" do
     create_ticket(
       status: "pending",
@@ -390,8 +448,14 @@ class Dashboard::OperationalMetricsServiceTest < ActiveSupport::TestCase
 
   private
 
-  def service
-    Dashboard::OperationalMetricsService.new(date: Date.current)
+  def service(
+    start_date: Date.current,
+    end_date: start_date
+  )
+    Dashboard::OperationalMetricsService.new(
+      start_date:,
+      end_date:
+    )
   end
 
   def create_ticket(
