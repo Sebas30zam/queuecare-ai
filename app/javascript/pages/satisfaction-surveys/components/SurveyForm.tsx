@@ -55,13 +55,13 @@ export default function SurveyForm({ serverErrors }: SurveyFormProps) {
         disabled={!canSubmit}
         className="mt-6 inline-flex min-h-13 w-full items-center justify-center gap-3 rounded-xl bg-blue-400 px-6 py-3.5 text-base font-bold text-white shadow-lg shadow-blue-200/60 transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <span>{form.processing ? "Enviando..." : "Enviar encuesta"}</span>
+        <span>{form.processing ? "Enviando..." : "Submit Survey"}</span>
 
         {!form.processing && <SendIcon />}
       </button>
 
       <p className="mt-4 text-center text-xs italic text-slate-400">
-        Su respuesta será procesada de forma anónima para fines estadísticos.
+        Your response will be processed anonymously for statistical purposes.
       </p>
     </form>
   );

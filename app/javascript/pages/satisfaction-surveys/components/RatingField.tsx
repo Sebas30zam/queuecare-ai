@@ -9,7 +9,7 @@ export default function RatingField({ value, onChange }: RatingFieldProps) {
   return (
     <fieldset>
       <legend className="w-full text-center text-base font-semibold text-slate-800">
-        ¿Cómo califica la atención recibida?
+        How would you rate the service you received?
       </legend>
 
       <div className="mt-5 flex items-center justify-center gap-3 sm:gap-4">

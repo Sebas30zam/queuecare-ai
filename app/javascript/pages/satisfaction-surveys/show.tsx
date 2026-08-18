@@ -56,11 +56,11 @@ export default function SatisfactionSurvey({
               ) : (
                 <>
                   <h1 className="mt-6 text-3xl font-black tracking-tight text-slate-900">
-                    Encuesta de Satisfacción
+                    Satisfaction Survey
                   </h1>
 
                   <p className="mt-2 text-sm leading-6 text-slate-500">
-                    Valoramos su tiempo. Por favor, califique su experiencia hoy.
+                    We value your time. Please rate your experience today.
                   </p>
 
                   <div className="mt-4 flex flex-wrap items-center justify-center gap-x-2 text-sm text-slate-500">
