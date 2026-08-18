@@ -37,11 +37,11 @@ export default function SatisfactionSurvey({
                   </div>
 
                   <h1 className="mt-6 text-3xl font-black tracking-tight text-slate-900">
-                    Gracias por su opinión
+                    Thank you for your feedback
                   </h1>
 
                   <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-slate-500">
-                    Su encuesta fue enviada correctamente. Su respuesta nos ayudará a mejorar la
+                    Your survey was submitted successfully. Su respuesta nos ayudará a mejorar la
                     atención.
                   </p>
 
