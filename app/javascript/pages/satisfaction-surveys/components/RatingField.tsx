@@ -20,7 +20,7 @@ export default function RatingField({ value, onChange }: RatingFieldProps) {
             <button
               key={rating}
               type="button"
-              aria-label={`Calificación ${rating} de 5`}
+              aria-label={`Rating ${rating} out of 5`}
               aria-pressed={isSelected}
               onClick={() => onChange(rating)}
               className={[
@@ -37,8 +37,8 @@ export default function RatingField({ value, onChange }: RatingFieldProps) {
       </div>
 
       <div className="mt-4 flex items-center justify-between text-[0.65rem] font-extrabold uppercase tracking-[0.14em] text-slate-500">
-        <span>Muy insatisfecho</span>
-        <span>Muy satisfecho</span>
+        <span>VERY DISSATISFIED</span>
+        <span>VERY SATISFIED</span>
       </div>
     </fieldset>
   );
